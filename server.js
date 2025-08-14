@@ -11,11 +11,7 @@ app.use(express.json());
 app.use(express.static('public'));
 
 // --- Database Connection ---
-// IMPORTANT: You MUST replace this with your own free MongoDB connection string!
-const dbURI = "YOUR_MONGODB_CONNECTION_STRING_HERE"; 
-mongoose.connect(dbURI, { useNewUrlParser: true, useUnifiedTopology: true })
-  .then(() => console.log("Successfully connected to MongoDB"))
-  .catch(err => console.error("MongoDB connection error:", err));
+const dbURI = "mongodb+srv://myuser:mypassword123@myapp.xrwnb4n.mongodb.net/?retryWrites=true&w=majority&appName=myapp";
 
 // --- API Routes ---
 app.use('/api/auth', require('./routes/auth'));
