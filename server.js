@@ -11,7 +11,7 @@ app.use(express.json());
 app.use(express.static('public'));
 
 // --- Database Connection ---
-const dbURI = "mongodb+srv://renderapp:o8NtSRmwGeTgL85c@myapp.xrwnb4n.mongodb.net/?retryWrites=true&w=majority&appName=myapp";
+const dbURI = process.env.DATABASE_URL;
 
 // --- API Routes ---
 app.use('/api/auth', require('./routes/auth'));
