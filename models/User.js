@@ -13,7 +13,7 @@ const UserSchema = new mongoose.Schema({
   },
   balance: {
     type: Number,
-    default: 100 // Give new users a starting balance for testing
+    default: 20 // Give new users a starting balance for testing
   },
   isAdmin: {
     type: Boolean,
