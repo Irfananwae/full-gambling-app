@@ -10,12 +10,8 @@
     <div class="form-card">
         <h2>Login</h2>
         <form id="loginForm">
-            <!-- ADDED name="email" HERE -->
             <input type="email" id="loginEmail" name="email" placeholder="Enter your email" required>
-
-            <!-- ADDED name="password" HERE -->
             <input type="password" id="loginPassword" name="password" placeholder="Enter your password" required>
-
             <button type="submit">Login</button>
         </form>
         <p id="message"></p>
@@ -29,14 +25,18 @@
     document.getElementById('loginForm').addEventListener('submit', async e => {
         e.preventDefault();
         msgEl.textContent = 'Processing...';
+
+        // --- NEW ROBUST CODE ---
+        const email = document.getElementById('loginEmail').value;
+        const password = document.getElementById('loginPassword').value;
+
         const res = await fetch(`${API_BASE}/login`, { 
             method: 'POST', 
             headers: {'Content-Type': 'application/json'}, 
-            body: JSON.stringify({ 
-                email: e.target.elements.email.value, // Now we can reliably use name
-                password: e.target.elements.password.value // Now we can reliably use name
-            }) 
+            body: JSON.stringify({ email, password }) // Use the variables directly
         });
+        // --- END OF NEW CODE ---
+        
         const data = await res.json();
         if (res.ok) {
             localStorage.setItem('authToken', data.token);
