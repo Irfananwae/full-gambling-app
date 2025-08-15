@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <!-- The crucial meta tag for fixed screen -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Sign Up</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="form-card">
+        <h2>Create Account</h2>
+        <form id="registerForm">
+            <input type="email" id="signupEmail" placeholder="Enter your email" required>
+            <input type="password" id="signupPassword" placeholder="Create a password" required>
+            <button type="submit">Sign Up</button>
+        </form>
+        <p id="message"></p>
+        <br>
+        <p>Already have an account? <a href="/login.html">Login here</a></p>
+    </div>
+    
+    <script>
+    const API_BASE = '/api/auth';
+    const msgEl = document.getElementById('message');
+    document.getElementById('registerForm').addEventListener('submit', async e => {
+        e.preventDefault();
+        msgEl.textContent = 'Processing...';
+        const res = await fetch(`${API_BASE}/register`, { 
+            method: 'POST', 
+            headers: {'Content-Type': 'application/json'}, 
+            body: JSON.stringify({ 
+                email: e.target.elements.signupEmail.value, 
+                password: e.target.elements.signupPassword.value 
+            }) 
+        });
+        const data = await res.json();
+        msgEl.textContent = data.message;
+        msgEl.style.color = res.ok ? 'lime' : 'red';
+        if (res.ok) {
+            setTimeout(() => { window.location.href = '/login.html'; }, 2000);
+        }
+    });
+    </script>
+</body>
+</html>
