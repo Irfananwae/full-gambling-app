@@ -1,27 +1,32 @@
-<!DOCTYPE html><html lang="en"><head> <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Welcome</title><link rel="stylesheet" href="style.css"></head><body>
-<div class="form-card"><h2>Register</h2><form id="registerForm"><input type="text" id="registerUsername" placeholder="Username" required><input type="password" id="registerPassword" placeholder="Password" required><button type="submit">Register</button></form></div>
-<div class="form-card"><h2>Login</h2><form id="loginForm"><input type="text" id="loginUsername" placeholder="Username" required><input type="password" id="loginPassword" placeholder="Password" required><button type="submit">Login</button></form></div>
-<p id="message"></p>
-<script>
-const API_BASE = '/api/auth';
-const msgEl = document.getElementById('message');
-document.getElementById('registerForm').addEventListener('submit', async e => {
-    e.preventDefault();
-    const res = await fetch(`${API_BASE}/register`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ username: e.target.elements.registerUsername.value, password: e.target.elements.registerPassword.value }) });
-    const data = await res.json();
-    msgEl.textContent = data.message;
-    msgEl.style.color = res.ok ? 'lime' : 'red';
-});
-document.getElementById('loginForm').addEventListener('submit', async e => {
-    e.preventDefault();
-    const res = await fetch(`${API_BASE}/login`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ username: e.target.elements.loginUsername.value, password: e.target.elements.loginPassword.value }) });
-    const data = await res.json();
-    if (res.ok) {
-        localStorage.setItem('authToken', data.token);
-        window.location.href = '/lobby.html';
-    } else {
-        msgEl.textContent = data.message;
-        msgEl.style.color = 'red';
-    }
-});
-</script></body></html>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <!-- The crucial meta tag for fixed screen -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Welcome to the Game</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="form-card">
+        <h1>Welcome!</h1>
+        <p>Please login to continue or sign up to create a new account and get your bonus!</p>
+        <br>
+        <a href="/login.html"><button>Login</button></a>
+        <a href="/signup.html"><button class="signup-btn">Sign Up</button></a>
+    </div>
+
+    <style>
+        .signup-btn {
+            background: linear-gradient(45deg, #28a745, #218838);
+        }
+    </style>
+
+    <script>
+        // If user is already logged in, redirect them to the lobby
+        if (localStorage.getItem('authToken')) {
+            window.location.href = '/lobby.html';
+        }
+    </script>
+</body>
+</html>
