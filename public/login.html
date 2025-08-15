@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <!-- The crucial meta tag for fixed screen -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Login</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="form-card">
+        <h2>Login</h2>
+        <form id="loginForm">
+            <input type="email" id="loginEmail" placeholder="Enter your email" required>
+            <input type="password" id="loginPassword" placeholder="Enter your password" required>
+            <button type="submit">Login</button>
+        </form>
+        <p id="message"></p>
+        <br>
+        <p>Don't have an account? <a href="/signup.html">Sign up here</a></p>
+    </div>
+
+    <script>
+    const API_BASE = '/api/auth';
+    const msgEl = document.getElementById('message');
+    document.getElementById('loginForm').addEventListener('submit', async e => {
+        e.preventDefault();
+        msgEl.textContent = 'Processing...';
+        const res = await fetch(`${API_BASE}/login`, { 
+            method: 'POST', 
+            headers: {'Content-Type': 'application/json'}, 
+            body: JSON.stringify({ 
+                email: e.target.elements.loginEmail.value, 
+                password: e.target.elements.loginPassword.value 
+            }) 
+        });
+        const data = await res.json();
+        if (res.ok) {
+            localStorage.setItem('authToken', data.token);
+            window.location.href = '/lobby.html';
+        } else {
+            msgEl.textContent = data.message;
+            msgEl.style.color = 'red';
+        }
+    });
+    </script>
+</body>
+</html>
