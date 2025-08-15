@@ -1,11 +1,12 @@
+// routes/auth.js  (DEBUGGING VERSION)
+
 const express = require('express');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 
 const router = express.Router();
-// IMPORTANT: Use the same secret key in game.js
-const JWT_SECRET = "your_super_secret_key"; 
+const JWT_SECRET = "your_super_secret_key";
 
 // Register
 router.post('/register', async (req, res) => {
@@ -20,7 +21,11 @@ router.post('/register', async (req, res) => {
     const user = new User({ username, password: hashedPassword });
     await user.save();
     res.status(201).json({ message: "User registered successfully!" });
-  } catch (error) { res.status(500).json({ message: "Server error" }); }
+  } catch (error) {
+    // --- THIS IS THE CHANGE ---
+    console.error("REGISTER ERROR:", error); // Log the full error on Render
+    res.status(500).json({ message: "DEBUG: " + error.message }); // Send the specific error to the screen
+  }
 });
 
 // Login
@@ -37,7 +42,11 @@ router.post('/login', async (req, res) => {
       const payload = { userId: user.id, username: user.username, isAdmin: user.isAdmin };
       const token = jwt.sign(payload, JWT_SECRET, { expiresIn: '24h' });
       res.json({ token, message: "Logged in successfully!" });
-    } catch (error) { res.status(500).json({ message: "Server error" }); }
+    } catch (error) {
+      // --- THIS IS THE CHANGE ---
+      console.error("LOGIN ERROR:", error); // Log the full error on Render
+      res.status(500).json({ message: "DEBUG: " + error.message }); // Send the specific error to the screen
+    }
 });
 
 module.exports = router;
