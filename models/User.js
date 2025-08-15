@@ -12,9 +12,7 @@ router.post('/register', async (req, res) => {
   // --- DIAGNOSTIC LOG ---
   console.log("--- NEW REGISTRATION ATTEMPT ---");
   console.log("Received body:", req.body);
-  console.log("Received headers:", req.headers['content-type']);
-  // --- END DIAGNOSTIC LOG ---
-
+  
   const { email, password } = req.body;
   if (!email || !password) {
     console.log("Validation failed: Email or Password is empty.");
