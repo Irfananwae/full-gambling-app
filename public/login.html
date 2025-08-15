@@ -2,7 +2,6 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <!-- The crucial meta tag for fixed screen -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Login</title>
     <link rel="stylesheet" href="style.css">
@@ -11,8 +10,12 @@
     <div class="form-card">
         <h2>Login</h2>
         <form id="loginForm">
-            <input type="email" id="loginEmail" placeholder="Enter your email" required>
-            <input type="password" id="loginPassword" placeholder="Enter your password" required>
+            <!-- ADDED name="email" HERE -->
+            <input type="email" id="loginEmail" name="email" placeholder="Enter your email" required>
+
+            <!-- ADDED name="password" HERE -->
+            <input type="password" id="loginPassword" name="password" placeholder="Enter your password" required>
+
             <button type="submit">Login</button>
         </form>
         <p id="message"></p>
@@ -30,8 +33,8 @@
             method: 'POST', 
             headers: {'Content-Type': 'application/json'}, 
             body: JSON.stringify({ 
-                email: e.target.elements.loginEmail.value, 
-                password: e.target.elements.loginPassword.value 
+                email: e.target.elements.email.value, // Now we can reliably use name
+                password: e.target.elements.password.value // Now we can reliably use name
             }) 
         });
         const data = await res.json();
