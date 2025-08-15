@@ -1,11 +1,12 @@
 const mongoose = require('mongoose');
 
 const UserSchema = new mongoose.Schema({
-  username: {
+  email: { // <-- CHANGED from username
     type: String,
     required: true,
     unique: true,
-    trim: true
+    trim: true,
+    lowercase: true // Good practice to store emails in lowercase
   },
   password: {
     type: String,
@@ -13,7 +14,7 @@ const UserSchema = new mongoose.Schema({
   },
   balance: {
     type: Number,
-    default: 20 // Give new users a starting balance for testing
+    default: 20
   },
   isAdmin: {
     type: Boolean,
