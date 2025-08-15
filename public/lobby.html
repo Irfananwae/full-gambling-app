@@ -7,7 +7,7 @@
 <!-- ... rest of the file is the same -->
 <script>
 const token = localStorage.getItem('authToken');
-if (!token) window.location.href = '/index.html';
+if (!token) window.location.href = '/login.html';
 async function fetchUserData() {
     const res = await fetch('/api/game/balance', { headers: { 'x-auth-token': token } });
     if (res.ok) {
