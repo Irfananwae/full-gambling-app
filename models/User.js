@@ -1,29 +1,40 @@
-const mongoose = require('mongoose');
+const express = require('express');
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
+const User = require('../models/User');
 
-const UserSchema = new mongoose.Schema({
-  email: { // <-- CHANGED from username
-    type: String,
-    required: true,
-    unique: true,
-    trim: true,
-    lowercase: true // Good practice to store emails in lowercase
-  },
-  password: {
-    type: String,
-    required: true
-  },
-  balance: {
-    type: Number,
-    default: 20
-  },
-  isAdmin: {
-    type: Boolean,
-    default: false
-  },
-  createdAt: {
-    type: Date,
-    default: Date.now
+const router = express.Router();
+const JWT_SECRET = "your_super_secret_key";
+
+// Register
+router.post('/register', async (req, res) => {
+  
+  // --- DIAGNOSTIC LOG ---
+  console.log("--- NEW REGISTRATION ATTEMPT ---");
+  console.log("Received body:", req.body);
+  console.log("Received headers:", req.headers['content-type']);
+  // --- END DIAGNOSTIC LOG ---
+
+  const { email, password } = req.body;
+  if (!email || !password) {
+    console.log("Validation failed: Email or Password is empty.");
+    return res.status(400).json({ message: "Please provide all fields." });
   }
+
+  // ... rest of the code is the same ...
+  try {
+    if (await User.findOne({ email })) return res.status(400).json({ message: "Email is already registered." });
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(password, salt);
+    const user = new User({ email, password: hashedPassword });
+    await user.save();
+    res.status(201).json({ message: "User registered successfully!" });
+  } catch (error) { res.status(500).json({ message: "Server error" }); }
 });
 
-module.exports = mongoose.model('User', UserSchema);
+// We only need to debug one route for now. Login route remains the same.
+router.post('/login', async (req, res) => {
+    // ... login code ...
+});
+
+module.exports = router;
