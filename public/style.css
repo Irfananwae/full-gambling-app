@@ -1,3 +1,18 @@
+html, body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    overflow-x: hidden; /* Prevents accidental horizontal scrolling */
+}
+
+/* Modify the main container to be full-width */
+.form-card, .game-container, .lobby-container, .page-container {
+    max-width: 100%;
+    border-radius: 0;
+    min-height: calc(100vh - 60px); /* Full height minus the footer nav */
+    box-sizing: border-box; /* Important for padding */
+    padding-bottom: 80px; /* Space for the footer nav */
+}
 @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap');
 
 body {
