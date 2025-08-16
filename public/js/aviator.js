@@ -9,16 +9,15 @@ const panels = {
     panel1: { id: 'panel1', el: document.getElementById('panel1'), input: document.querySelector('#panel1 .bet-input'), btn: document.querySelector('#panel1 .bet-btn'), state: 'idle', betAmount: 0 },
     panel2: { id: 'panel2', el: document.getElementById('panel2'), input: document.querySelector('#panel2 .bet-input'), btn: document.querySelector('#panel2 .bet-btn'), state: 'idle', betAmount: 0 }
 };
-
 function resizeCanvas() { canvas.width = canvas.clientWidth; canvas.height = canvas.clientHeight; }
 window.addEventListener('resize', resizeCanvas); resizeCanvas();
 
 function renderAnimation() {
     if(!planeEl.style.display || planeEl.style.display === 'none') return;
     const w = canvas.width, h = canvas.height;
-    const curvePower = 0.6;
+    const curve = (x) => Math.pow(x, 0.6) * 0.9;
     const planeX = Math.min((currentMultiplier - 1) * (w / 15), w - 40);
-    const planeY = h - Math.pow(planeX / w, curvePower) * h * 0.9 - 25;
+    const planeY = h - curve(planeX / w) * h - 25;
     const prevPoint = pathPoints.length > 0 ? pathPoints[pathPoints.length - 1] : [0, h];
     const angle = Math.atan2(planeY - prevPoint[1], planeX - prevPoint[0]);
     planeEl.style.transform = `translate(${planeX}px, ${planeY}px) rotate(${angle + Math.PI / 2}rad)`;
@@ -54,6 +53,8 @@ socket.on('aviatorState', (state) => {
     }
 });
 
+socket.on('aviatorNewBet', data => { if(!data.email) return; const betDiv = document.createElement('div'); betDiv.className = 'live-bet-item'; betDiv.innerHTML = `<span>${data.email}</span><span>₹${Number(data.betAmount).toFixed(2)}</span>`; liveBetsEl.prepend(betDiv); if (liveBetsEl.children.length > 10) liveBetsEl.lastChild.remove(); });
+
 function updatePanelUI(panel, newState, multiplier = 0) {
     panel.state = newState;
     const controlsDisabled = newState !== 'idle';
@@ -61,9 +62,9 @@ function updatePanelUI(panel, newState, multiplier = 0) {
     panel.el.querySelectorAll('.adjust-btn, .quick-bet-btn').forEach(b => b.disabled = controlsDisabled);
     switch (newState) {
         case 'idle': panel.btn.textContent = `BET (₹${panel.input.value})`; panel.btn.className = 'bet-btn'; panel.btn.disabled = false; break;
-        case 'waiting_for_round': panel.btn.textContent = 'WAITING...'; panel.btn.className = 'bet-btn waiting'; panel.btn.disabled = true; break;
+        case 'waiting_for_round': panel.btn.textContent = 'WAITING'; panel.btn.className = 'bet-btn waiting'; panel.btn.disabled = true; break;
         case 'in_game': panel.btn.textContent = `CASH OUT`; panel.btn.className = 'bet-btn cashout'; panel.btn.disabled = false; break;
-        case 'cashed_out': panel.btn.textContent = `CASHED OUT @ ${multiplier}x`; panel.btn.className = 'bet-btn cashed-out'; panel.btn.disabled = true; break;
+        case 'cashed_out': panel.btn.textContent = `CASHED OUT @ ${multiplier.toFixed(2)}x`; panel.btn.className = 'bet-btn cashed-out'; panel.btn.disabled = true; break;
     }
 }
 
@@ -83,6 +84,6 @@ Object.values(panels).forEach(panel => {
     panel.el.querySelectorAll('.quick-bet-btn').forEach(b => b.onclick = () => { input.value = b.textContent; input.oninput(); });
 });
 
-function updateHistory(history) { if(!history) return; historyEl.innerHTML = ''; history.slice(0, 15).forEach(h => { const item = document.createElement('div'); item.className = `history-item ${h.multiplier >= 2 ? 'safe' : 'crashed'}`; item.textContent = `${h.multiplier.toFixed(2)}x`; historyEl.appendChild(item); }); }
+function updateHistory(history) { if(!history) return; historyEl.innerHTML = ''; history.slice(0, 15).forEach(m => { const item = document.createElement('div'); let colorClass = 'red'; if (m >= 2) colorClass = 'green'; else if (m >= 1.1) colorClass = 'orange'; item.className = `history-item ${colorClass}`; item.textContent = `${m.toFixed(2)}x`; historyEl.appendChild(item); }); }
 socket.on('balanceUpdate', data => balanceEl.textContent = `₹${data.newBalance.toFixed(2)}`);
 document.addEventListener('DOMContentLoaded', () => fetch('/api/game/balance', { headers: { 'x-auth-token': token }}).then(r=>r.json()).then(d=>balanceEl.textContent=`₹${d.balance.toFixed(2)}`));
