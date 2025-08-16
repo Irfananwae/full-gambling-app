@@ -25,39 +25,30 @@ const authMiddleware = (req, res, next) => {
 // ... (keep all the top part of the file the same) ...
 
 // Color Prediction Game Logic
+// ... (top of the file is the same) ...
+
 router.post('/play-color-game', authMiddleware, async (req, res) => {
-    // We add roundId to the request body
-    const { betAmount, chosenColor, roundId } = req.body; 
+    const { betAmount, chosenColor } = req.body;
+    const userId = req.user.userId;
 
     if (!betAmount || !chosenColor || betAmount <= 0) {
         return res.status(400).json({ message: 'Invalid bet' });
     }
 
     try {
-        const user = await User.findById(req.user.userId);
-        if (!user) {
-            return res.status(404).json({ message: 'User not found' });
-        }
-        if (user.balance < betAmount) {
+        const user = await User.findById(userId);
+        if (!user || user.balance < betAmount) {
             return res.status(400).json({ message: 'Insufficient balance' });
         }
         
-        // This is the core logic. Subtract the bet amount immediately.
+        // Immediately deduct the bet amount
         user.balance -= betAmount;
-        
-        // We will add the winnings later if they win.
-        // For now, just save the new lower balance.
-        // This prevents double-betting.
         await user.save();
         
-        // The game result is now handled by the socket.io logic.
-        // This route's only job is to accept the bet and deduct the balance.
-        // We don't calculate win/loss here anymore.
+        // Register the bet with the live game engine for payout processing
+        req.registerBet(userId, betAmount, chosenColor);
 
-        // We can add a more complex system later to check the result against the roundId
-        // but for now this is simpler and safer.
-
-        res.json({ message: `Bet placed for round ${roundId}`, newBalance: user.balance });
+        res.json({ message: `Bet placed!`, newBalance: user.balance });
 
     } catch (error) {
         console.error("GAME PLAY ERROR:", error);
@@ -65,8 +56,7 @@ router.post('/play-color-game', authMiddleware, async (req, res) => {
     }
 });
 
-// ... (keep the /balance route the same) ...
-
+// ... (rest of the file is the same) ...
 module.exports = router;
 
 
