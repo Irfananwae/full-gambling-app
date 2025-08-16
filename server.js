@@ -111,6 +111,78 @@ setInterval(() => {
         }, 8000);
     }
 }, 100);
+// --- GALAXY SPIN BATTLE ENGINE ---
+let galaxyBattleState = {
+    phase: 'waiting', // waiting, spinning, result
+    timer: 60, // 60 seconds to join a battle
+    jackpot: 0,
+    players: {}, // { userId: { email } }
+    winner: null,
+    entryFee: 50 // The cost to enter a battle
+};
+
+const joinGalaxyBattle = (userId, email) => {
+    if (galaxyBattleState.phase !== 'waiting') {
+        return { success: false, message: 'The battle has already started!' };
+    }
+    if (galaxyBattleState.players[userId]) {
+        return { success: false, message: 'You have already joined this battle.' };
+    }
+    galaxyBattleState.players[userId] = { email: email.split('@')[0] };
+    galaxyBattleState.jackpot += galaxyBattleState.entryFee;
+    io.emit('galaxyBattleState', galaxyBattleState); // Update everyone
+    return { success: true };
+};
+app.set('joinGalaxyBattle', joinGalaxyBattle); // Attach for the API route to use
+
+// Galaxy Battle Game Loop (runs every second)
+setInterval(() => {
+    if (galaxyBattleState.phase === 'waiting') {
+        galaxyBattleState.timer--;
+        if (galaxyBattleState.timer <= 0 || Object.keys(galaxyBattleState.players).length >= 10) { // Start if timer ends or 10 players join
+            galaxyBattleState.phase = 'spinning';
+            galaxyBattleState.timer = 10; // 10 second spin/result phase
+            io.emit('galaxyBattleState', galaxyBattleState);
+        }
+    } else if (galaxyBattleState.phase === 'spinning') {
+        galaxyBattleState.timer--;
+        if (galaxyBattleState.timer <= 0) {
+            galaxyBattleState.phase = 'result';
+            galaxyBattleState.timer = 5; // 5 seconds to show winner
+            
+            // --- Determine Winner and Payout ---
+            const playerIds = Object.keys(galaxyBattleState.players);
+            if (playerIds.length > 0) {
+                const winnerId = playerIds[Math.floor(Math.random() * playerIds.length)];
+                const houseCut = galaxyBattleState.jackpot * 0.10; // 10% house edge
+                const winnerPayout = galaxyBattleState.jackpot - houseCut;
+                
+                galaxyBattleState.winner = { email: galaxyBattleState.players[winnerId].email, payout: winnerPayout };
+                
+                // Award winnings to the winner
+                User.findByIdAndUpdate(winnerId, { $inc: { balance: winnerPayout } }).then(updatedUser => {
+                    if (updatedUser && connectedUsers[winnerId]) {
+                        io.to(connectedUsers[winnerId]).emit('balanceUpdate', { newBalance: updatedUser.balance });
+                    }
+                });
+            } else {
+                galaxyBattleState.winner = { email: 'No one joined!', payout: 0 };
+            }
+            io.emit('galaxyBattleState', galaxyBattleState);
+        }
+    } else if (galaxyBattleState.phase === 'result') {
+        galaxyBattleState.timer--;
+        if (galaxyBattleState.timer <= 0) {
+            // Reset for the next round
+            galaxyBattleState.phase = 'waiting';
+            galaxyBattleState.timer = 60;
+            galaxyBattleState.jackpot = 0;
+            galaxyBattleState.players = {};
+            galaxyBattleState.winner = null;
+            io.emit('galaxyBattleState', galaxyBattleState);
+        }
+    }
+}, 1000);
 
 // --- SOCKET.IO & SERVER STARTUP ---
 io.on('connection', (socket) => {
