@@ -302,3 +302,45 @@ button.deposit-btn:hover {
 .bet-item .bet-amount {
     font-weight: 600;
 }
+/* --- ARENA PRO GAME UI --- */
+.game-page { padding: 15px; }
+.game-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+.game-header h1 { font-size: 1.5em; color: #fff; margin: 0; }
+.back-btn { font-size: 1.5em; color: #a0a0a0; text-decoration: none; margin-right: 15px; }
+.balance-box { background: rgba(0,0,0,0.3); padding: 5px 15px; border-radius: 50px; border: 1px solid #45a29e; }
+.balance-box span { color: #66fcf1; font-weight: 600; font-size: 1.1em; }
+
+.timer-card { background: rgba(20, 20, 35, 0.7); border: 1px solid rgba(102, 252, 241, 0.2); border-radius: 10px; padding: 15px; text-align: center; margin-bottom: 15px; }
+#phase-text { margin: 0; color: #fff; font-size: 1.2em; }
+#countdown-bar-container { background: #0d0d1a; border-radius: 50px; height: 8px; margin-top: 10px; overflow: hidden; }
+#countdown-bar { background: linear-gradient(90deg, #66fcf1, #45a29e); height: 100%; border-radius: 50px; transition: width 1s linear; }
+
+#result-display { min-height: 60px; display: flex; justify-content: center; align-items: center; margin-bottom: 15px; }
+.result-text { font-size: 3em; font-weight: 700; text-transform: uppercase; animation: pop-in 0.4s ease-out; }
+@keyframes pop-in { from { transform: scale(0.5); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+
+.history-bar { background: rgba(20, 20, 35, 0.7); border-radius: 10px; padding: 10px; margin-bottom: 20px; text-align: center; }
+.history-bar h3 { font-size: 0.8em; color: #a0a0a0; margin: 0 0 10px 0; }
+#history-dots { display: flex; justify-content: center; gap: 8px; }
+.history-dot { width: 15px; height: 15px; border-radius: 50%; }
+.history-dot.red { background-color: #dc3545; }
+.history-dot.green { background-color: #28a745; }
+.history-dot.blue { background-color: #007bff; }
+
+.bet-pads { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 15px; }
+.bet-pad { height: 80px; border-radius: 10px; display: flex; justify-content: center; align-items: center; font-size: 1.5em; font-weight: 700; color: #fff; cursor: pointer; transition: all 0.2s ease; }
+.bet-pad:hover { transform: scale(1.05); }
+.bet-pad.disabled { opacity: 0.4; pointer-events: none; }
+.bet-pad.red { background: #dc3545; }
+.bet-pad.green { background: #28a745; }
+.bet-pad.blue { background: #007bff; }
+
+.amount-controls { display: flex; gap: 10px; }
+.amount-controls input { flex-grow: 1; }
+.amount-controls button { padding: 10px 15px; font-size: 1em; }
+
+.message-box { color: #66fcf1; }
+#flash-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 9999; pointer-events: none; opacity: 0; transition: opacity 0.5s ease; }
+#flash-overlay.active { opacity: 0.3; }
+.balance-box span.highlight { animation: highlight-anim 0.5s; }
+@keyframes highlight-anim { 0% { color: #fff; transform: scale(1.2); } 100% { color: #66fcf1; transform: scale(1); } }
