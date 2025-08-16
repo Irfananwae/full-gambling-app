@@ -3,7 +3,6 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <!-- Fonts and Icons -->
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     <link rel="stylesheet" href="style.css">
@@ -11,7 +10,6 @@
 </head>
 <body>
     <div class="game-container">
-        <!-- Header with Balance -->
         <div class="game-header">
             <h1>Color Arena</h1>
             <div class="balance-box">
@@ -19,19 +17,13 @@
                 <span id="balance">₹--.--</span>
             </div>
         </div>
-
-        <!-- Countdown Timer -->
         <div class="timer-card">
-            <h3 id="phase-text">Connecting...</h3>
+            <h3 id="phase-text">Connecting to Arena...</h3>
             <div id="countdown-bar-container">
                 <div id="countdown-bar"></div>
             </div>
         </div>
-
-        <!-- Result Display Area -->
         <div id="result-display"></div>
-
-        <!-- Betting Controls -->
         <div class="bet-controls">
             <input type="number" id="betAmount" placeholder="Enter Bet Amount" min="1">
             <div class="color-buttons">
@@ -41,32 +33,19 @@
             </div>
             <p id="message" style="min-height: 24px; margin-top: 15px;"></p>
         </div>
-
-        <!-- Live Bets Feed -->
         <div class="live-bets-feed">
             <h3>Live Bets</h3>
             <div id="liveBetsList"></div>
         </div>
-
     </div>
-
-    <!-- Footer Navigation (for easy exit) -->
     <nav class="footer-nav">
-        <a href="/lobby.html" class="nav-item active"><i class="fas fa-gamepad"></i><span>Games</span></a>
-        <a href="/deposit.html" class="nav-item"><i class="fas fa-wallet"></i><span>Deposit</span></a>
-        <a href="/withdrawal.html" class="nav-item"><i class="fas fa-money-bill-wave"></i><span>Withdraw</span></a>
-        <a href="/profile.html" class="nav-item"><i class="fas fa-user"></i><span>Profile</span></a>
+        <!-- ... your footer nav html ... -->
     </nav>
-    
-    <!-- Socket.IO client library -->
     <script src="/socket.io/socket.io.js"></script>
     <script>
-        // --- SETUP ---
         const token = localStorage.getItem('authToken');
         if (!token) window.location.href = '/login.html';
         const socket = io();
-
-        // --- ELEMENT REFERENCES ---
         const balanceEl = document.getElementById('balance');
         const messageEl = document.getElementById('message');
         const betInput = document.getElementById('betAmount');
@@ -75,82 +54,49 @@
         const resultDisplayEl = document.getElementById('result-display');
         const liveBetsListEl = document.getElementById('liveBetsList');
         const countdownBar = document.getElementById('countdown-bar');
-
         let userHasBet = false;
         let currentRoundId = '';
-
-        // --- SOCKET.IO EVENT HANDLER ---
         socket.on('gameState', (state) => {
-            currentRoundId = state.roundId; // Keep track of the current round
-            
-            // Update Countdown Bar
+            if (currentRoundId !== state.roundId && state.phase === 'betting') {
+                userHasBet = false;
+                messageEl.textContent = 'Choose your color';
+            }
+            currentRoundId = state.roundId;
             const percentage = (state.timer / 15) * 100;
             countdownBar.style.width = `${percentage}%`;
-
             if (state.phase === 'betting') {
-                phaseEl.textContent = `Place Your Bet! #${currentRoundId.slice(-4)}`;
+                phaseEl.innerHTML = `Place Bets! <span style="font-size: 0.7em; color: #a0a0a0;">#${currentRoundId.slice(-4)}</span>`;
                 resultDisplayEl.innerHTML = '';
-                setButtonsDisabled(false);
-                userHasBet = false; // Reset betting status for new round
-                messageEl.textContent = 'Choose your color';
-
-                // Update Live Bets
+                setButtonsDisabled(userHasBet);
                 let botsHtml = '';
-                state.bots.forEach(bot => {
-                    botsHtml += `<div class="bet-item"><span class="player-name">${bot.name}</span><span class="bet-amount" style="color:${bot.color};">₹${bot.bet}</span></div>`;
-                });
+                state.bots.forEach(bot => { botsHtml = `<div class="bet-item"><span class="player-name">${bot.name}</span><span class="bet-amount" style="color:${bot.color};">₹${bot.bet}</span></div>` + botsHtml; });
                 liveBetsListEl.innerHTML = botsHtml;
             } else if (state.phase === 'result') {
-                phaseEl.textContent = `Result for #${currentRoundId.slice(-4)}`;
+                phaseEl.textContent = 'Round Over! Result:';
                 setButtonsDisabled(true);
-                resultDisplayEl.innerHTML = `<div class="result-text" style="background-color:${state.winningColor}; color: #fff;">${state.winningColor}</div>`;
-                // Check if user's bet won or lost after the result is announced
-                setTimeout(fetchBalance, 1000); // Re-fetch balance to see result of bet
+                resultDisplayEl.innerHTML = `<div class="result-text" style="background-color:${state.winningColor}; color: #fff; text-shadow: 0 0 10px #000;">${state.winningColor}</div>`;
+                setTimeout(fetchBalance, 1000);
             }
         });
-
-        function setButtonsDisabled(disabled) {
-            colorButtons.forEach(b => b.disabled = disabled);
-        }
-
-        // --- BALANCE & BETTING ---
-        async function fetchBalance() {
-            const res = await fetch('/api/game/balance', { headers: { 'x-auth-token': token }});
-            if (res.ok) {
-                const data = await res.json();
-                balanceEl.textContent = `₹${data.balance.toFixed(2)}`;
-            } else {
-                window.location.href = '/login.html';
-            }
-        }
-
+        function setButtonsDisabled(disabled) { colorButtons.forEach(b => b.disabled = disabled); }
+        async function fetchBalance() { const res = await fetch('/api/game/balance', { headers: { 'x-auth-token': token }}); if (res.ok) { const data = await res.json(); balanceEl.textContent = `₹${data.balance.toFixed(2)}`; } else { window.location.href = '/login.html'; }}
         async function placeBet(chosenColor) {
-            if (userHasBet) {
-                messageEl.textContent = "You have already placed a bet for this round.";
-                return;
-            }
+            if (userHasBet) { messageEl.textContent = "You have already bet this round."; return; }
             const betAmount = Number(betInput.value);
-            if (!betAmount || betAmount <= 0) {
-                messageEl.textContent = "Please enter a valid bet amount.";
-                return;
-            }
-            
-            setButtonsDisabled(true); // Disable buttons after placing one bet
-            messageEl.textContent = `Your bet of ₹${betAmount} on ${chosenColor} is placed!`;
-            userHasBet = true;
-
-            const res = await fetch('/api/game/play-color-game', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'x-auth-token': token },
-                body: JSON.stringify({ betAmount, chosenColor, roundId: currentRoundId })
-            });
-            
+            if (!betAmount || betAmount <= 0) { messageEl.textContent = "Please enter a valid amount."; return; }
+            setButtonsDisabled(true);
+            messageEl.textContent = `Betting ₹${betAmount} on ${chosenColor}...`;
+            const res = await fetch('/api/game/play-color-game', { method: 'POST', headers: { 'Content-Type': 'application/json', 'x-auth-token': token }, body: JSON.stringify({ betAmount, chosenColor }) });
             const data = await res.json();
-            // Update balance immediately after placing bet
-            balanceEl.textContent = `₹${data.newBalance.toFixed(2)}`; 
-            // The win/loss result will be clear on the next balance fetch after the result phase
+            if (res.ok) {
+                userHasBet = true;
+                messageEl.textContent = `Your bet is placed! Good luck.`;
+                balanceEl.textContent = `₹${data.newBalance.toFixed(2)}`;
+            } else {
+                messageEl.textContent = data.message;
+                setButtonsDisabled(false);
+            }
         }
-
         document.addEventListener('DOMContentLoaded', fetchBalance);
     </script>
 </body>
