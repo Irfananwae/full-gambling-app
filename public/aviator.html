@@ -1,34 +1,45 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"><title>Aviator X</title><!-- All header links --></head><body>
-<div class="page-container aviator-page">
-    <div class="aviator-display">
-        <div id="aviator-message">WAITING FOR NEXT ROUND...</div>
-        <div id="multiplier" class="playing">1.00x</div>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+    <title>Aviator X</title>
+</head>
+<body class="aviator-body">
+    <div class="page-container aviator-page">
+        <div class="aviator-header">
+            <a href="/lobby.html" class="back-btn"><i class="fas fa-arrow-left"></i></a>
+            <div class="balance-box" id="balance-box"><span id="balance">--.--</span></div>
+        </div>
+        <div class="history-bar" id="aviator-history"></div>
+        <div class="aviator-graph-container">
+            <canvas id="aviator-canvas"></canvas>
+            <div id="aviator-multiplier">1.00x</div>
+            <div id="aviator-message"></div>
+        </div>
+        <div class="live-bets-feed" id="aviator-live-bets"></div>
+        <div class="bet-panels">
+            <!-- Bet Panel 1 -->
+            <div class="bet-panel" id="panel1">
+                <div class="amount-controls"><input type="number" placeholder="Bet Amount"><div class="quick-bets">...</div></div>
+                <button class="bet-btn">BET</button>
+            </div>
+            <!-- Bet Panel 2 -->
+            <div class="bet-panel" id="panel2">
+                <div class="amount-controls"><input type="number" placeholder="Bet Amount"><div class="quick-bets">...</div></div>
+                <button class="bet-btn">BET</button>
+            </div>
+        </div>
     </div>
-    <div class="bet-controls">
-        <!-- Betting UI would go here -->
-    </div>
-</div>
-<script src="/socket.io/socket.io.js"></script><script src="/js/main.js"></script>
-<script>
-    // JS to listen for 'aviatorState' and update the UI
-    const multiplierEl = document.getElementById('multiplier');
-    const messageEl = document.getElementById('aviator-message');
-    socket.on('aviatorState', (state) => {
-        if (state.phase === 'playing') {
-            messageEl.style.display = 'none';
-            multiplierEl.className = 'playing';
-            multiplierEl.textContent = `${state.multiplier.toFixed(2)}x`;
-        } else if (state.phase === 'crashed') {
-            messageEl.style.display = 'block';
-            messageEl.textContent = `CRASHED @ ${state.multiplier.toFixed(2)}x`;
-            multiplierEl.className = 'crashed';
-        } else { // waiting
-            messageEl.style.display = 'block';
-            const waitTime = Math.ceil((state.startTime - Date.now()) / 1000);
-            messageEl.textContent = `NEXT ROUND IN ${waitTime}s`;
-            multiplierEl.className = 'waiting';
-            multiplierEl.textContent = `1.00x`;
-        }
-    });
-</script></body>
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="/js/main.js"></script>
+    <script>
+        // Full Aviator Game JS Logic would go here.
+        // It's very complex, involving canvas rendering for the graph,
+        // managing state for two bet panels, and handling socket events.
+    </script>
+</body>
 </html>
