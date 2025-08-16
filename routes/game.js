@@ -22,37 +22,53 @@ const authMiddleware = (req, res, next) => {
 };
 
 // --- THERE IS NO mongoose.connect() COMMAND IN THIS FILE ---
+// ... (keep all the top part of the file the same) ...
 
 // Color Prediction Game Logic
 router.post('/play-color-game', authMiddleware, async (req, res) => {
-    const { betAmount, chosenColor } = req.body;
+    // We add roundId to the request body
+    const { betAmount, chosenColor, roundId } = req.body; 
+
     if (!betAmount || !chosenColor || betAmount <= 0) {
         return res.status(400).json({ message: 'Invalid bet' });
     }
 
     try {
         const user = await User.findById(req.user.userId);
-        if (!user || user.balance < betAmount) {
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+        if (user.balance < betAmount) {
             return res.status(400).json({ message: 'Insufficient balance' });
         }
+        
+        // This is the core logic. Subtract the bet amount immediately.
+        user.balance -= betAmount;
+        
+        // We will add the winnings later if they win.
+        // For now, just save the new lower balance.
+        // This prevents double-betting.
+        await user.save();
+        
+        // The game result is now handled by the socket.io logic.
+        // This route's only job is to accept the bet and deduct the balance.
+        // We don't calculate win/loss here anymore.
 
-        const colors = ['red', 'green', 'blue'];
-        const winningColor = colors[Math.floor(Math.random() * colors.length)];
+        // We can add a more complex system later to check the result against the roundId
+        // but for now this is simpler and safer.
 
-        if (chosenColor.toLowerCase() === winningColor) {
-            user.balance += betAmount * 1; // Win 2x the bet amount (bet + winnings)
-            await user.save();
-            res.json({ message: `You WON! The color was ${winningColor}.`, newBalance: user.balance, winningColor });
-        } else {
-            user.balance -= betAmount;
-            await user.save();
-            res.json({ message: `You lost. The winning color was ${winningColor}.`, newBalance: user.balance, winningColor });
-        }
+        res.json({ message: `Bet placed for round ${roundId}`, newBalance: user.balance });
+
     } catch (error) {
         console.error("GAME PLAY ERROR:", error);
         res.status(500).json({ message: 'Server error during game play.' });
     }
 });
+
+// ... (keep the /balance route the same) ...
+
+module.exports = router;
+
 
 // Get User Balance
 router.get('/balance', authMiddleware, async (req, res) => {
