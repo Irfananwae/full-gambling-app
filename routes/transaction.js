@@ -35,6 +35,23 @@ router.post('/request-withdrawal', auth, async (req, res) => {
         console.error("--- WITHDRAWAL REQUEST ERROR ---", err);
         res.status(500).json({ message: 'Server error during withdrawal request.' });
     }
+router.post('/submit-deposit', auth, async (req, res) => {
+    const { amount, transactionId } = req.body;
+    const userId = req.user.userId;
+    if (!amount || amount <= 0 || !transactionId) {
+        return res.status(400).json({ message: 'Amount and Transaction ID are required.' });
+    }
+    try {
+        const existingDeposit = await Deposit.findOne({ transactionId });
+        if (existingDeposit) {
+            return res.status(400).json({ message: 'This Transaction ID has already been submitted.' });
+        }
+        const deposit = new Deposit({ userId, amount, transactionId });
+        await deposit.save();
+        res.status(201).json({ message: 'Deposit request submitted for review!' });
+    } catch (err) {
+        res.status(500).json({ message: 'Server error during deposit submission.' });
+    }
 });
 
 module.exports = router;
