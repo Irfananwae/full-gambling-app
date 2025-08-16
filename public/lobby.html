@@ -1,21 +1,87 @@
-<!DOCTYPE html><html lang="en"><head><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"> <meta charset="UTF-8"><title>Game Lobby</title><link rel="stylesheet" href="style.css"></head><body>
-<div class="lobby-container"><h1>Game Lobby</h1><p>Welcome, <b id="username">...</b>!</p><p>Your Balance: <b id="balance">...</b></p><hr><div class="game-list"><div class="game-card"><h2>Color Prediction</h2><p>Bet on Red, Green, or Blue. Win 2x your bet!</p><a href="/game.html"><button>Play Now</button></a></div><div class="game-card"><h2>Aviator</h2><p>Coming Soon!</p><button disabled>Play Now</button></div></div><br>
-<!-- ADD THE BUTTONS HERE -->
-<a href="/deposit.html"><button class="deposit-btn">Deposit</button></a>
-<button onclick="logout()">Logout</button>
-</div>
-<!-- ... rest of the file is the same -->
-<script>
-const token = localStorage.getItem('authToken');
-if (!token) window.location.href = '/login.html';
-async function fetchUserData() {
-    const res = await fetch('/api/game/balance', { headers: { 'x-auth-token': token } });
-    if (res.ok) {
-        const data = await res.json();
-        document.getElementById('username').textContent = data.username;
-        document.getElementById('balance').textContent = `₹${data.balance.toFixed(2)}`;
-    } else { logout(); }
-}
-function logout() { localStorage.removeItem('authToken'); window.location.href = '/index.html'; }
-document.addEventListener('DOMContentLoaded', fetchUserData);
-</script></body></html>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <!-- The crucial meta tag for fixed, non-zoomable screen -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Game Lobby</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="lobby-container">
+        <!-- Profile & Balance Header -->
+        <div class="profile-header">
+            <div class="welcome-text">
+                <p>Welcome back,</p>
+                <h3 id="userEmail">loading...</h3>
+            </div>
+            <div class="balance-container">
+                <p>Your Balance</p>
+                <h2 id="balance">₹--.--</h2>
+            </div>
+        </div>
+
+        <!-- Game List -->
+        <h1 class="section-title">Choose Your Game</h1>
+        <div class="game-list">
+            <a href="/game.html" class="game-card">
+                <img src="https://placehold.co/600x400/1a1a1d/66fcf1?text=Color\nPrediction" alt="Color Prediction Game">
+                <div class="game-info">
+                    <h3>Color Prediction</h3>
+                    <p>Bet on colors and win big!</p>
+                </div>
+            </a>
+            <div class="game-card disabled">
+                <img src="https://placehold.co/600x400/1a1a1d/f9a825?text=Aviator\n(Soon)" alt="Aviator Game">
+                <div class="game-info">
+                    <h3>Aviator</h3>
+                    <p>Coming Soon!</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="action-buttons">
+            <a href="/deposit.html"><button class="deposit-btn">Deposit</button></a>
+            <button onclick="logout()">Logout</button>
+        </div>
+    </div>
+
+    <script>
+    const token = localStorage.getItem('authToken');
+    if (!token) window.location.href = '/login.html';
+
+    // Decode JWT to get email without another API call
+    function decodeJwt(token) {
+        try {
+            return JSON.parse(atob(token.split('.')[1]));
+        } catch (e) {
+            return null;
+        }
+    }
+
+    async function fetchUserBalance() {
+        const res = await fetch('/api/game/balance', { headers: { 'x-auth-token': token } });
+        if (res.ok) {
+            const data = await res.json();
+            document.getElementById('balance').textContent = `₹${data.balance.toFixed(2)}`;
+        } else { 
+            logout(); 
+        }
+    }
+    
+    function logout() { 
+        localStorage.removeItem('authToken'); 
+        window.location.href = '/login.html'; 
+    }
+    
+    document.addEventListener('DOMContentLoaded', () => {
+        const decodedToken = decodeJwt(token);
+        if (decodedToken && decodedToken.email) {
+            document.getElementById('userEmail').textContent = decodedToken.email;
+        }
+        fetchUserBalance();
+    });
+    </script>
+</body>
+    </html>
