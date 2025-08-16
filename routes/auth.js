@@ -2,9 +2,12 @@ const express = require('express');
 const bcrypt = require('bcryptjs');
 const jwt =require('jsonwebtoken');
 const User = require('../models/User');
-
+// ... other requires ...
 const router = express.Router();
-const JWT_SECRET = process.env.JWT_SECRET || "default_super_secret_key";
+// Use the secret key from the environment, with a fallback for local testing
+const JWT_SECRET = process.env.JWT_SECRET || "default_fallback_secret"; 
+
+// ... rest of the file is the same ...
 
 // --- REGISTER ROUTE ---
 router.post('/register', async (req, res) => {
