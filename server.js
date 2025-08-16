@@ -21,29 +21,35 @@ app.use(express.static('public'));
 
 let gameState = { timer: 20, phase: 'waiting', winningColor: null, history: [] };
 let pendingBets = {};
-let connectedUsers = {}; // Maps userId to socket.id
+let connectedUsers = {};
 
-// --- THE GAME LOOP ---
+// We define registerBet here
+const registerBet = (userId, betAmount, chosenColor) => {
+    pendingBets[userId] = { betAmount, chosenColor };
+};
+// AND EXPORT IT HERE for other files to use
+module.exports.registerBet = registerBet;
+
+// --- THE GAME LOOP (No changes needed here) ---
 setInterval(() => {
-    if (gameState.phase === 'betting') { // Round ends, calculate result
+    if (gameState.phase === 'betting') {
         gameState.phase = 'result';
         gameState.timer = 5;
         const colors = ['red', 'green', 'blue'];
         gameState.winningColor = colors[Math.floor(Math.random() * colors.length)];
-        gameState.history.unshift(gameState.winningColor); // Add to history
-        if (gameState.history.length > 20) gameState.history.pop(); // Keep history short
+        gameState.history.unshift(gameState.winningColor);
+        if (gameState.history.length > 20) gameState.history.pop();
         processPayouts(gameState.winningColor);
-    } else { // New round starts
+    } else {
         gameState.phase = 'betting';
         gameState.timer = 15;
         pendingBets = {};
     }
-}, 15000); // Betting phase is 15 seconds
+}, 15000);
 
-// --- The 1-Second Countdown Timer ---
 setInterval(() => {
     gameState.timer--;
-    io.emit('gameState', gameState); // Broadcast state every second
+    io.emit('gameState', gameState);
 }, 1000);
 
 async function processPayouts(winningColor) {
@@ -51,10 +57,8 @@ async function processPayouts(winningColor) {
         const bet = pendingBets[userId];
         if (bet.chosenColor === winningColor) {
             try {
-                const winnings = bet.betAmount * 2; // Payout is 2x
+                const winnings = bet.betAmount * 2;
                 const updatedUser = await User.findByIdAndUpdate(userId, { $inc: { balance: winnings } }, { new: true });
-                
-                // If the winning user is online, send them a real-time balance update
                 if (connectedUsers[userId]) {
                     io.to(connectedUsers[userId]).emit('balanceUpdate', { newBalance: updatedUser.balance });
                 }
@@ -63,45 +67,37 @@ async function processPayouts(winningColor) {
     }
 }
 
-// Share the betting function with the API routes
-app.set('registerBet', (userId, betAmount, chosenColor) => {
-    pendingBets[userId] = { betAmount, chosenColor };
-});
-
-// --- REAL-TIME SOCKET CONNECTION HANDLING ---
 io.on('connection', (socket) => {
-    console.log('A user connected:', socket.id);
-    // Authenticate the user's connection
     socket.on('authenticate', (token) => {
         try {
             const decoded = jwt.verify(token, JWT_SECRET);
             connectedUsers[decoded.userId] = socket.id;
-            console.log(`User ${decoded.userId} authenticated with socket ${socket.id}`);
-        } catch (err) { console.log('Socket authentication failed'); }
+        } catch (err) { /* silent fail */ }
     });
     socket.on('disconnect', () => {
-        // Remove user from the map on disconnect
         for (const userId in connectedUsers) {
             if (connectedUsers[userId] === socket.id) {
                 delete connectedUsers[userId];
                 break;
             }
         }
-        console.log('A user disconnected:', socket.id);
     });
 });
 
-// --- Server Startup ---
 async function startServer() {
     if (!dbURI) { console.error('FATAL ERROR!'); process.exit(1); }
     try {
         await mongoose.connect(dbURI, { useNewUrlParser: true, useUnifiedTopology: true });
         console.log('✅ MongoDB Connected!');
+        
+        // These are now guaranteed to be valid router objects
         app.use('/api/auth', require('./routes/auth'));
         app.use('/api/game', require('./routes/game'));
         app.use('/api/transaction', require('./routes/transaction'));
         app.use('/api/admin', require('./routes/admin'));
+        
         server.listen(PORT, () => { console.log(`🚀 Server is live on port ${PORT}`); });
     } catch (err) { console.error('❌ CRITICAL STARTUP ERROR:', err); process.exit(1); }
 }
+
 startServer();
