@@ -105,6 +105,8 @@ async function startServer() {
         console.log('✅ MongoDB Connected Successfully!');
         app.use('/api/auth', require('./routes/auth'));
         app.use('/api/game', require('./routes/game'));
+        // ... after app.use('/api/game', ...);
+app.use('/api/admin', require('./routes/admin'));
         io.on('connection', (socket) => { console.log('A user connected via WebSocket:', socket.id); });
         server.listen(PORT, () => { console.log(`🚀 Server is live on port ${PORT}`); });
     } catch (err) { console.error('❌ CRITICAL: Could not connect to MongoDB on startup.', err); process.exit(1); }
