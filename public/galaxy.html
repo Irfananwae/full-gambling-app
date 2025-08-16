@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <!-- All head links (meta, fonts, css, etc.) go here -->
+    <title>Galaxy Spin</title>
+</head>
+<body class="aviator-body">
+    <div class="stars"></div>
+    <div class="page-container galaxy-page">
+        <div class="game-header"><a href="/lobby.html" class="back-btn"><i class="fas fa-arrow-left"></i></a><h1>Galaxy Spin</h1><div class="balance-box">Balance: <span id="balance">--.--</span></div></div>
+        
+        <!-- SOLO SPIN -->
+        <div class="info-card">
+            <h2>Solo Spin</h2>
+            <div class="slot-machine">
+                <div class="reel" id="reel1"></div>
+                <div class="reel" id="reel2"></div>
+                <div class="reel" id="reel3"></div>
+            </div>
+            <div class="amount-controls"><input id="solo-bet-amount" type="number" value="10" min="10"><button id="spin-btn">SPIN</button></div>
+            <p id="solo-message"></p>
+        </div>
+
+        <!-- GALAXY BATTLE -->
+        <div class="info-card galaxy-battle-card">
+            <h2>Galaxy Battle</h2>
+            <p id="battle-phase-text">Waiting for players...</p>
+            <div class="jackpot-display" id="battle-jackpot">₹0</div>
+            <p><span id="battle-player-count">0</span>/10 Players | Timer: <span id="battle-timer">60</span>s</p>
+            <div class="players-list" id="battle-players-list"></div>
+            <button id="join-battle-btn">JOIN BATTLE (Cost: ₹50)</button>
+            <p id="battle-message"></p>
+        </div>
+    </div>
+    <nav class="footer-nav"></nav>
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="/js/main.js"></script>
+    <script>
+        // Full Galaxy Spin JS would go here. It would handle:
+        // - Solo spin button clicks (calling the /api/galaxy/spin route)
+        // - Animating the reels with CSS classes
+        // - Join battle button clicks (calling the /api/galaxy/join-battle route)
+        // - Listening to 'galaxyBattleState' socket events to update the battle UI
+        // - Using navigator.vibrate() on spin and win events.
+    </script>
+</body>
+</html>
