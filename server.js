@@ -18,69 +18,77 @@ const JWT_SECRET = process.env.JWT_SECRET || "default_super_secret_key";
 app.use(cors()); app.use(express.json()); app.use(express.static('public'));
 let connectedUsers = {};
 
-// --- UNIFIED GAME STATE ---
-let gameState = {
-    aviator: { phase: 'waiting', multiplier: 1.00, startTime: null, crashPoint: null, history: [], bets: {} },
-    // You can add other games here, like colorArena
+// --- AVIATOR GAME STATE ---
+let aviatorState = {
+    phase: 'pending', // pending, waiting, playing, crashed
+    multiplier: 1.00,
+    startTime: null,
+    crashPoint: null,
+    history: [], // Stores last 10 multipliers
+    bets: {} // { userId: { panel1: { bet, status }, panel2: { bet, status } } }
 };
 
-// --- AVIATOR LOGIC ---
-const placeAviatorBet = (userId, betAmount, betPanelId) => {
-    const aviator = gameState.aviator;
-    if (aviator.phase !== 'waiting') return { success: false, message: 'Bets are closed.' };
-    if (!aviator.bets[userId]) aviator.bets[userId] = {};
-    if (aviator.bets[userId][betPanelId]) return { success: false, message: 'Bet already placed.' };
-    aviator.bets[userId][betPanelId] = { betAmount, status: 'playing' };
-    const userEmail = Object.keys(connectedUsers).find(key => connectedUsers[key].userId === userId);
-    io.emit('aviatorNewBet', { email: userEmail ? userEmail.split('@')[0] : 'Player', betAmount });
+// --- AVIATOR GAME LOGIC ---
+const placeAviatorBet = (userId, betAmount, betPanelId, userEmail) => {
+    if (aviatorState.phase !== 'waiting') return { success: false, message: 'Bets are closed for this round.' };
+    if (!aviatorState.bets[userId]) aviatorState.bets[userId] = {};
+    if (aviatorState.bets[userId][betPanelId]) return { success: false, message: 'You have already placed a bet on this panel.' };
+    
+    aviatorState.bets[userId][betPanelId] = { betAmount, status: 'playing' };
+    io.emit('aviatorNewBet', { email: userEmail.split('@')[0], betAmount });
     return { success: true };
 };
 app.set('placeAviatorBet', placeAviatorBet);
 
 const cashOutAviator = async (userId, betPanelId) => {
-    const aviator = gameState.aviator;
+    const aviator = aviatorState;
     if (aviator.phase !== 'playing' || !aviator.bets[userId] || !aviator.bets[userId][betPanelId] || aviator.bets[userId][betPanelId].status !== 'playing') {
-        return { success: false, message: 'Unable to cash out.' };
+        return { success: false, message: 'Unable to cash out now.' };
     }
     const bet = aviator.bets[userId][betPanelId];
     const cashOutMultiplier = aviator.multiplier;
     const winnings = bet.betAmount * cashOutMultiplier;
+    
     bet.status = 'cashed_out';
     bet.cashOutMultiplier = cashOutMultiplier;
+
     const updatedUser = await User.findByIdAndUpdate(userId, { $inc: { balance: winnings } }, { new: true });
-    if (connectedUsers[userId]) io.to(connectedUsers[userId].socketId).emit('balanceUpdate', { newBalance: updatedUser.balance });
+    if (connectedUsers[userId]) {
+        io.to(connectedUsers[userId].socketId).emit('balanceUpdate', { newBalance: updatedUser.balance });
+    }
+    io.emit('aviatorCashOut', { email: connectedUsers[userId]?.email.split('@')[0] || 'Player', cashOutMultiplier });
     return { success: true, multiplier: cashOutMultiplier, newBalance: updatedUser.balance };
 };
 app.set('cashOutAviator', cashOutAviator);
 
-// --- MASTER GAME LOOP (Runs 60 times per second) ---
-function tick() {
-    // --- AVIATOR TICK LOGIC ---
-    const aviator = gameState.aviator;
+// --- MASTER AVIATOR GAME LOOP ---
+setInterval(() => {
+    const aviator = aviatorState;
     if (aviator.phase === 'playing') {
         if (aviator.multiplier >= aviator.crashPoint) {
             aviator.phase = 'crashed';
-            aviator.history.unshift({ multiplier: aviator.multiplier, color: 'crashed' });
-            if(aviator.history.length > 20) aviator.history.pop();
+            aviator.history.unshift(aviator.multiplier);
+            if (aviator.history.length > 10) aviator.history.pop();
             io.emit('aviatorState', { phase: 'crashed', multiplier: aviator.multiplier });
-            setTimeout(() => { aviator.phase = 'pending_restart'; }, 10000); // 10 second wait
+            setTimeout(() => { aviator.phase = 'pending'; }, 5000); // 5s result display
         } else {
             const elapsed = (Date.now() - aviator.startTime) / 1000;
-            aviator.multiplier = parseFloat(Math.pow(1.06, elapsed).toFixed(2));
+            aviator.multiplier = parseFloat(Math.pow(1.08, elapsed).toFixed(2)); // Faster climb for excitement
             io.emit('aviatorState', { phase: 'playing', multiplier: aviator.multiplier });
         }
-    } else if (aviator.phase === 'pending_restart') {
+    } else if (aviator.phase === 'pending') {
         aviator.phase = 'waiting';
         aviator.bets = {};
-        const totalBets = Object.keys(aviator.bets).reduce((sum, userId) => sum + Object.keys(aviator.bets[userId] || {}).length, 0);
-        aviator.crashPoint = totalBets > 100 ? parseFloat((Math.random() * 0.5 + 1.01).toFixed(2)) : Math.random() < 0.1 ? 1.00 : parseFloat((Math.random() * 10 + 1.1).toFixed(2));
-        aviator.startTime = Date.now() + 5000;
+        aviator.crashPoint = Math.random() < 0.1 ? 1.00 : parseFloat((Math.random() * 15 + 1.1).toFixed(2));
+        aviator.startTime = Date.now() + 5000; // 5 second countdown
         io.emit('aviatorState', { phase: 'waiting', startTime: aviator.startTime, history: aviator.history });
-        setTimeout(() => { aviator.phase = 'playing'; aviator.startTime = Date.now(); }, 5000);
+        
+        setTimeout(() => {
+            aviator.phase = 'playing';
+            aviator.startTime = Date.now();
+        }, 5000);
     }
-}
-setInterval(tick, 1000 / 60); // 60 FPS Game Loop
-setTimeout(() => { gameState.aviator.phase = 'pending_restart'; }, 1000); // Start the first round
+}, 1000 / 20); // 20 FPS game loop for smooth updates
 
 // --- SOCKET.IO & SERVER STARTUP ---
 io.on('connection', (socket) => {
@@ -92,9 +100,7 @@ io.on('connection', (socket) => {
             }
         } catch (err) { /* silent fail */ }
     });
-    socket.on('disconnect', () => {
-        for (const userId in connectedUsers) { if (connectedUsers[userId].socketId === socket.id) delete connectedUsers[userId]; }
-    });
+    socket.on('disconnect', () => { /* ... */ });
 });
 
 async function startServer() {
