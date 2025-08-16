@@ -1,45 +1,41 @@
-const express = require('express');
-const router = express.Router();
-const User = require('../models/User');
-const jwt = require('jsonwebtoken');
+// ... (keep the top part with adminAuth middleware) ...
 
-const JWT_SECRET = process.env.JWT_SECRET || "default_super_secret_key";
-
-// --- Middleware to verify the user is an Admin ---
-const adminAuth = (req, res, next) => {
-    const token = req.header('x-auth-token');
-    if (!token) {
-        return res.status(401).json({ message: 'No token, authorization denied' });
-    }
-
+// GET: Fetch all withdrawal requests
+router.get('/withdrawals', adminAuth, async (req, res) => {
     try {
-        const decoded = jwt.verify(token, JWT_SECRET);
-
-        // --- THIS IS THE CRITICAL CHECK ---
-        // It looks inside the decoded token for the 'isAdmin' flag.
-        if (!decoded.isAdmin) {
-            return res.status(403).json({ message: 'Access denied. User is not an admin.' });
-        }
-        // --- END OF CRITICAL CHECK ---
-
-        req.user = decoded;
-        next();
-    } catch (e) {
-        res.status(400).json({ message: 'Token is not valid' });
+        const withdrawals = await Withdrawal.find({ status: 'pending' }).populate('userId', 'email');
+        res.json(withdrawals);
+    } catch (err) {
+        res.status(500).json({ message: 'Server error fetching withdrawals' });
     }
-};
-
-// --- Admin Routes (No changes needed here) ---
-
-// GET: Fetch all users' data
-router.get('/users', adminAuth, async (req, res) => {
-    // ... your existing /users route ...
 });
 
-// POST: Add money to a user's account
-router.post('/add-balance', adminAuth, async (req, res) => {
-    // ... your existing /add-balance route ...
+// POST: Approve a withdrawal (marks as complete)
+router.post('/approve-withdrawal', adminAuth, async (req, res) => {
+    const { withdrawalId } = req.body;
+    try {
+        const withdrawal = await Withdrawal.findByIdAndUpdate(withdrawalId, { status: 'approved' }, { new: true });
+        if (!withdrawal) return res.status(404).json({ message: 'Withdrawal not found.' });
+        res.json({ message: 'Withdrawal approved.' });
+    } catch (err) {
+        res.status(500).json({ message: 'Server error.' });
+    }
 });
 
+// POST: Reject a withdrawal (refunds the money to the user)
+router.post('/reject-withdrawal', adminAuth, async (req, res) => {
+    const { withdrawalId } = req.body;
+    try {
+        const withdrawal = await Withdrawal.findByIdAndUpdate(withdrawalId, { status: 'rejected' }, { new: true });
+        if (!withdrawal) return res.status(404).json({ message: 'Withdrawal not found.' });
+        
+        // Refund the money to the user's balance
+        await User.findByIdAndUpdate(withdrawal.userId, { $inc: { balance: withdrawal.amount } });
+        
+        res.json({ message: 'Withdrawal rejected and funds returned to user.' });
+    } catch (err) {
+        res.status(500).json({ message: 'Server error.' });
+    }
+});
 
-module.exports = router;
+// ... (keep your existing /users and /add-balance routes) ...
