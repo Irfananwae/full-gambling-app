@@ -1,492 +1,63 @@
-/* --- NEON GRID THEME - GLOBAL STYLES --- */
+/* --- PHOENIX PROJECT - MASTER STYLESHEET --- */
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap');
 
-* {
-    box-sizing: border-box;
-    margin: 0;
-    padding: 0;
-}
-
-body {
-    font-family: 'Poppins', sans-serif;
-    background-color: #0d0d1a; /* Dark blue/purple base */
-    background-image: 
-        linear-gradient(rgba(102, 252, 241, 0.1) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(102, 252, 241, 0.1) 1px, transparent 1px);
-    background-size: 30px 30px;
-    color: #e0e0e0;
-    width: 100%;
-    overflow-x: hidden;
-}
-
-/* --- MAIN PAGE CONTAINER (FIXES THE GAP) --- */
-.page-container {
-    width: 100%;
-    min-height: calc(100vh - 70px); /* Full height minus footer */
-    padding: 25px 15px 90px 15px; /* Added top padding */
-}
-
-/* --- ADVANCED BUTTON STYLES --- */
-button {
-    font-family: 'Poppins', sans-serif;
-    padding: 12px 30px;
-    background: linear-gradient(45deg, #66fcf1, #45a29e);
-    color: #0b0c10;
-    border: none;
-    border-radius: 50px;
-    cursor: pointer;
-    font-size: 16px;
-    font-weight: 600;
-    transition: all 0.3s ease;
-    box-shadow: 0 0 15px rgba(102, 252, 241, 0.3);
-}
-
-button:hover:not(:disabled) {
-    transform: scale(1.05);
-    box-shadow: 0 0 25px rgba(102, 252, 241, 0.6);
-}
-
-button.deposit-btn {
-    background: linear-gradient(45deg, #9f50ff, #5d17a3);
-    box-shadow: 0 0 15px rgba(159, 80, 255, 0.3);
-}
-button.deposit-btn:hover {
-    box-shadow: 0 0 25px rgba(159, 80, 255, 0.6);
-}
-
-/* --- GLASSMORPHISM CARD STYLES --- */
-.profile-header, .game-card, .info-card {
-    background: rgba(20, 20, 35, 0.7);
-    backdrop-filter: blur(12px);
-    border: 1px solid rgba(102, 252, 241, 0.2);
-    border-radius: 15px;
-    padding: 20px;
-    box-shadow: 0 8px 32px rgba(0,0,0,0.4);
-    transition: all 0.3s ease;
-}
-
-.profile-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 30px;
-}
-
-.balance-container h2 {
-    color: #66fcf1;
-    font-size: 2em;
-    font-weight: 700;
-}
-
-/* --- ADVANCED GAME LIST --- */
-.game-list {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 20px;
-}
-
-.game-card {
-    text-decoration: none;
-    color: #e0e0e0;
-    overflow: hidden;
-}
-
-.game-card:hover {
-    border-color: rgba(102, 252, 241, 0.7);
-    transform: translateY(-5px);
-}
-
-.game-card img {
-    width: 100%;
-    height: 150px;
-    object-fit: cover;
-    display: block;
-    border-radius: 8px;
-    margin-bottom: 15px;
-}
-
-.game-card h3 {
-    color: #fff;
-    font-weight: 600;
-}
-.game-card p {
-    font-size: 0.9em;
-    color: #a0a0a0;
-}
-
-/* --- ADVANCED FOOTER TAB BAR --- */
-.footer-nav {
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    width: 100%;
-    height: 70px;
-    background: rgba(11, 11, 26, 0.8);
-    backdrop-filter: blur(15px);
-    display: flex;
-    justify-content: space-around;
-    align-items: center;
-    border-top: 1px solid rgba(102, 252, 241, 0.2);
-    z-index: 1000;
-}
-
-.nav-item {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    color: #a0a0a0;
-    text-decoration: none;
-    font-size: 0.8em;
-    transition: all 0.3s ease;
-}
-
-.nav-item i {
-    font-size: 1.8em;
-    margin-bottom: 5px;
-}
-
-.nav-item.active {
-    color: #66fcf1;
-    transform: translateY(-5px);
-    text-shadow: 0 0 10px rgba(102, 252, 241, 0.7);
-}
-/* --- NEON GRID - ADVANCED GAME UI --- */
-
-.game-container {
-    padding: 20px 15px 90px 15px; /* Top, sides, bottom */
-}
-
-.game-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    width: 100%;
-    margin-bottom: 20px;
-}
-
-.game-header h1 {
-    font-size: 1.5em;
-    margin: 0;
-}
-
-.balance-box {
-    background: rgba(20, 20, 35, 0.7);
-    border: 1px solid rgba(102, 252, 241, 0.2);
-    border-radius: 10px;
-    padding: 5px 15px;
-    text-align: right;
-}
-
-.balance-box p {
-    margin: 0;
-    font-size: 0.8em;
-    color: #a0a0a0;
-}
-.balance-box #balance {
-    font-size: 1.4em;
-    font-weight: 700;
-    color: #66fcf1;
-}
-
-/* --- Countdown Timer Bar --- */
-.timer-card {
-    background: rgba(20, 20, 35, 0.7);
-    border: 1px solid rgba(102, 252, 241, 0.2);
-    border-radius: 15px;
-    padding: 20px;
-    margin-bottom: 20px;
-    text-align: center;
-}
-.timer-card h3 {
-    margin: 0 0 15px 0;
-    color: #fff;
-    font-weight: 600;
-}
-#countdown-bar-container {
-    width: 100%;
-    height: 10px;
-    background-color: #1f2833;
-    border-radius: 5px;
-    overflow: hidden;
-}
-#countdown-bar {
-    height: 100%;
-    width: 100%;
-    background: linear-gradient(90deg, #66fcf1, #45a29e);
-    border-radius: 5px;
-    transition: width 1s linear; /* Smooth countdown animation */
-}
-
-/* --- Result Display --- */
-#result-display {
-    min-height: 80px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    font-size: 2em;
-    font-weight: 700;
-    text-transform: uppercase;
-}
-
-@keyframes result-pop {
-    0% { transform: scale(0.5); opacity: 0; }
-    80% { transform: scale(1.1); opacity: 1; }
-    100% { transform: scale(1); opacity: 1; }
-}
-.result-text {
-    animation: result-pop 0.5s ease-out;
-    padding: 10px 20px;
-    border-radius: 10px;
-}
-
-/* --- Bet Controls --- */
-.bet-controls {
-    background: rgba(20, 20, 35, 0.7);
-    border: 1px solid rgba(102, 252, 241, 0.2);
-    border-radius: 15px;
-    padding: 20px;
-    margin-bottom: 20px;
-}
-#betAmount {
-    width: 100%;
-    text-align: center;
-    font-size: 1.2em;
-    margin-bottom: 15px;
-    padding: 12px;
-}
-
-.color-buttons {
-    display: grid;
-    grid-template-columns: 1fr 1fr 1fr;
-    gap: 15px;
-}
-.color-btn {
-    padding: 25px 10px;
-    font-size: 1.2em;
-    font-weight: 700;
-    border-radius: 10px;
-    border: 2px solid transparent;
-    transition: all 0.3s ease;
-}
-.color-btn:not(:disabled):hover {
-    border: 2px solid #fff;
-    transform: scale(1.05);
-}
-
-/* Specific button colors */
-.color-btn.red { background: #d92e5a; box-shadow: 0 0 15px rgba(217, 46, 90, 0.5); }
-.color-btn.green { background: #22a66a; box-shadow: 0 0 15px rgba(34, 166, 106, 0.5); }
-.color-btn.blue { background: #2974d9; box-shadow: 0 0 15px rgba(41, 116, 217, 0.5); }
-
-/* --- Live Bets Feed --- */
-.live-bets-feed {
-    text-align: left;
-    max-height: 150px;
-    overflow-y: auto;
-    padding-right: 10px; /* For scrollbar */
-}
-.live-bets-feed h3 {
-    margin-bottom: 10px;
-    color: #fff;
-}
-.bet-item {
-    display: flex;
-    justify-content: space-between;
-    margin-bottom: 8px;
-    font-size: 0.9em;
-    animation: fadeIn 0.5s;
-}
-.bet-item .player-name {
-    color: #a0a0a0;
-}
-.bet-item .bet-amount {
-    font-weight: 600;
-}
-/* --- ARENA PRO GAME UI --- */
-.game-page { padding: 15px; }
-.game-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
-.game-header h1 { font-size: 1.5em; color: #fff; margin: 0; }
-.back-btn { font-size: 1.5em; color: #a0a0a0; text-decoration: none; margin-right: 15px; }
-.balance-box { background: rgba(0,0,0,0.3); padding: 5px 15px; border-radius: 50px; border: 1px solid #45a29e; }
-.balance-box span { color: #66fcf1; font-weight: 600; font-size: 1.1em; }
-
-.timer-card { background: rgba(20, 20, 35, 0.7); border: 1px solid rgba(102, 252, 241, 0.2); border-radius: 10px; padding: 15px; text-align: center; margin-bottom: 15px; }
-#phase-text { margin: 0; color: #fff; font-size: 1.2em; }
-#countdown-bar-container { background: #0d0d1a; border-radius: 50px; height: 8px; margin-top: 10px; overflow: hidden; }
-#countdown-bar { background: linear-gradient(90deg, #66fcf1, #45a29e); height: 100%; border-radius: 50px; transition: width 1s linear; }
-
-#result-display { min-height: 60px; display: flex; justify-content: center; align-items: center; margin-bottom: 15px; }
-.result-text { font-size: 3em; font-weight: 700; text-transform: uppercase; animation: pop-in 0.4s ease-out; }
-@keyframes pop-in { from { transform: scale(0.5); opacity: 0; } to { transform: scale(1); opacity: 1; } }
-
-.history-bar { background: rgba(20, 20, 35, 0.7); border-radius: 10px; padding: 10px; margin-bottom: 20px; text-align: center; }
-.history-bar h3 { font-size: 0.8em; color: #a0a0a0; margin: 0 0 10px 0; }
-#history-dots { display: flex; justify-content: center; gap: 8px; }
-.history-dot { width: 15px; height: 15px; border-radius: 50%; }
-.history-dot.red { background-color: #dc3545; }
-.history-dot.green { background-color: #28a745; }
-.history-dot.blue { background-color: #007bff; }
-
-.bet-pads { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 15px; }
-.bet-pad { height: 80px; border-radius: 10px; display: flex; justify-content: center; align-items: center; font-size: 1.5em; font-weight: 700; color: #fff; cursor: pointer; transition: all 0.2s ease; }
-.bet-pad:hover { transform: scale(1.05); }
-.bet-pad.disabled { opacity: 0.4; pointer-events: none; }
-.bet-pad.red { background: #dc3545; }
-.bet-pad.green { background: #28a745; }
-.bet-pad.blue { background: #007bff; }
-
-.amount-controls { display: flex; gap: 10px; }
-.amount-controls input { flex-grow: 1; }
-.amount-controls button { padding: 10px 15px; font-size: 1em; }
-
-.message-box { color: #66fcf1; }
-#flash-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 9999; pointer-events: none; opacity: 0; transition: opacity 0.5s ease; }
-#flash-overlay.active { opacity: 0.3; }
-.balance-box span.highlight { animation: highlight-anim 0.5s; }
-@keyframes highlight-anim { 0% { color: #fff; transform: scale(1.2); } 100% { color: #66fcf1; transform: scale(1); } }
-/* --- TITANIUM UI - ADVANCED FORMS --- */
-.input-group {
-    position: relative;
-    margin: 25px 0;
-}
-
-.input-group input {
-    width: 100%;
-    border: 1px solid rgba(102, 252, 241, 0.3);
-    border-radius: 8px;
-    padding: 14px;
-    background: transparent;
-    color: #e0e0e0;
-    font-size: 1em;
-    transition: all 0.3s ease;
-}
-
-.input-group label {
-    position: absolute;
-    top: 15px;
-    left: 15px;
-    color: #a0a0a0;
-    pointer-events: none;
-    transition: all 0.3s ease;
-}
-
-.input-group input:focus,
-.input-group input:not(:placeholder-shown) {
-    border-color: rgba(102, 252, 241, 0.8);
-    background: rgba(102, 252, 241, 0.1);
-}
-
-.input-group input:focus + label,
-.input-group input:not(:placeholder-shown) + label {
-    top: -10px;
-    left: 10px;
-    font-size: 0.8em;
-    color: #66fcf1;
-    background-color: #141423; /* Match the card background */
-    padding: 0 5px;
-}
-
-/* --- TITANIUM UI - ADVANCED ADMIN PANEL --- */
-.admin-tabs {
-    display: flex;
-    gap: 10px;
-    margin-bottom: 20px;
-}
-.tab-btn {
-    flex-grow: 1;
-    background: transparent;
-    border: 1px solid rgba(102, 252, 241, 0.3);
-    color: #a0a0a0;
-}
-.tab-btn.active {
-    background: linear-gradient(45deg, #66fcf1, #45a29e);
-    color: #0b0c10;
-    box-shadow: 0 0 15px rgba(102, 252, 241, 0.3);
-}
-
-.tab-content { display: none; }
-.tab-content.active { display: block; animation: fadeIn 0.5s; }
-
-.admin-table { width: 100%; border-collapse: collapse; }
-.admin-table td, .admin-table th { padding: 12px 8px; text-align: left; border-bottom: 1px solid rgba(102, 252, 241, 0.1); }
-.admin-table .avatar { width: 30px; height: 30px; border-radius: 50%; vertical-align: middle; margin-right: 10px; }
-.action-group { display: flex; gap: 5px; }
-.action-group input { max-width: 60px; padding: 5px; }
-.action-group button { padding: 5px 10px; }
-button.approve { background: #28a745; box-shadow: none; }
-button.reject { background: #dc3545; box-shadow: none; }
-/* --- GALAXY SPIN UI --- */
-.galaxy-page { display: flex; flex-direction: column; gap: 15px; }
-.slot-machine { perspective: 1000px; display: flex; justify-content: center; gap: 15px; padding: 20px; }
-.reel { width: 80px; height: 120px; border: 2px solid #66fcf1; border-radius: 10px; background: rgba(0,0,0,0.3); transform-style: preserve-3d; transition: transform 2s cubic-bezier(0.25, 1, 0.5, 1); }
-.reel.spinning { transform: rotateX(-3600deg); } /* Spin 10 times */
-.reel-face { position: absolute; width: 100%; height: 100%; backface-visibility: hidden; display: flex; justify-content: center; align-items: center; font-size: 50px; }
-/* Faces are positioned in 3D space, this is a simplified example */
-
-.galaxy-battle-card { text-align: center; }
-.jackpot-display { font-size: 2.5em; font-weight: 700; color: #ffc107; text-shadow: 0 0 15px #ffc107; }
-.players-list { font-size: 0.9em; color: #a0a0a0; min-height: 40px; }
-/* --- PHOENIX PROJECT - GLOBAL STYLES --- */
+* { box-sizing: border-box; }
+html { height: 100%; }
 body {
     background-color: #0f151c;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    min-height: 100vh;
-    font-family: 'Poppins', sans-serif;
+    display: flex; justify-content: center; align-items: center;
+    min-height: 100vh; font-family: 'Poppins', sans-serif;
+    margin: 0; padding: 10px;
 }
-
 .phone-container {
-    width: 100%;
-    max-width: 420px;
-    height: 95vh;
-    max-height: 850px;
-    background-color: #1a222d;
-    border-radius: 30px;
-    border: 8px solid #000;
-    box-shadow: 0 0 40px rgba(0,0,0,0.6);
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-    position: relative;
+    width: 100%; max-width: 420px; height: 95vh; max-height: 850px;
+    background-color: #1a222d; border-radius: 30px; border: 8px solid #000;
+    box-shadow: 0 0 40px rgba(0,0,0,0.6); display: flex; flex-direction: column;
+    overflow: hidden; position: relative;
 }
-
-.page-container {
-    flex-grow: 1;
-    overflow-y: auto;
-    animation: pageFadeIn 0.5s ease-out;
-}
+.page-container { flex-grow: 1; overflow-y: auto; overflow-x: hidden; padding: 15px; animation: pageFadeIn 0.5s ease-out; }
 @keyframes pageFadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
 /* --- THEMATIC BACKGROUNDS --- */
 .stars { position:absolute; top:0; left:0; width:100%; height:100%; z-index:0; background:#000 url(https://www.script-tutorials.com/demos/360/images/stars.png) repeat top center; animation:move-twinkle-back 200s linear infinite; }
-.aviator-body .phone-container, .galaxy-body .phone-container { background-color: transparent; }
-.aviator-body, .galaxy-body { background: #0f151c; }
+.aviator-body .phone-container, .game-body .phone-container { background-color: transparent; }
 
-/* ... your existing Neon Grid and other styles are fine ... */
+/* --- SHARED ADVANCED UI --- */
+.info-card { background: rgba(20, 20, 35, 0.7); backdrop-filter: blur(12px); border: 1px solid rgba(102, 252, 241, 0.2); border-radius: 15px; padding: 20px; box-shadow: 0 8px 32px rgba(0,0,0,0.4); }
+.input-group { position: relative; margin: 25px 0; }
+.input-group input { width: 100%; border: 1px solid rgba(102, 252, 241, 0.3); border-radius: 8px; padding: 14px; background: transparent; color: #e0e0e0; font-size: 1em; }
+.input-group label { position: absolute; top: 15px; left: 15px; color: #a0a0a0; pointer-events: none; transition: all 0.3s ease; }
+.input-group input:focus + label, .input-group input:not(:placeholder-shown) + label { top: -10px; left: 10px; font-size: 0.8em; color: #66fcf1; background-color: #141423; padding: 0 5px; }
+.footer-nav { position: absolute; bottom: 0; left: 0; width: 100%; height: 60px; background: rgba(11, 11, 26, 0.8); backdrop-filter: blur(15px); display: flex; justify-content: space-around; align-items: center; border-top: 1px solid rgba(102, 252, 241, 0.2); z-index: 1000; }
+.nav-item { display: flex; flex-direction: column; align-items: center; color: #a0a0a0; text-decoration: none; font-size: 0.8em; }
+.nav-item.active { color: #66fcf1; }
+.nav-item i { font-size: 1.8em; margin-bottom: 5px; }
 
-/* --- PHOENIX AVIATOR CLONE UI --- */
-.aviator-page { position: relative; z-index: 1; width: 100%; height: 100%; padding: 10px; display: flex; flex-direction: column; }
+/* --- LOBBY --- */
+.profile-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+.balance-container h2 { color: #66fcf1; }
+.game-list { display: grid; grid-template-columns: 1fr; gap: 15px; }
+.game-card { text-decoration: none; color: #e0e0e0; transition: transform 0.3s ease; }
+.game-card:hover { transform: scale(1.05); }
+.game-card img { width: 100%; height: 120px; object-fit: cover; border-radius: 10px; margin-bottom: 10px; }
+
+/* --- AVIATOR CLONE CSS --- */
+.aviator-page { padding: 10px; }
 .aviator-header { flex-shrink: 0; display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; }
 .aviator-history-bar { flex-shrink: 0; display: flex; gap: 8px; margin-bottom: 5px; overflow-x: auto; scrollbar-width: none; }
 .aviator-history-bar::-webkit-scrollbar { display: none; }
 .history-item { padding: 2px 8px; border-radius: 15px; font-size: 0.8em; font-weight: 600; border: 1px solid; }
-.history-item.crashed { color: #ff5555; border-color: #ff5555; }
-.history-item.safe { color: #4caf50; border-color: #4caf50; }
+.history-item.red { color: #ff5555; border-color: #ff5555; } .history-item.orange { color: #ffc107; border-color: #ffc107; } .history-item.green { color: #4caf50; border-color: #4caf50; }
 .aviator-main { flex-grow: 1; display: flex; gap: 5px; overflow: hidden; }
 .live-bets-container { width: 120px; flex-shrink: 0; background: rgba(43, 53, 68, 0.6); backdrop-filter: blur(5px); border-radius: 10px; padding: 8px; display: flex; flex-direction: column; }
 .live-bets-container h3 { font-size: 0.9em; text-align: center; color: #8a9eb5; margin: 0 0 5px 0; }
 .live-bets-list { flex-grow: 1; overflow-y: auto; scrollbar-width: thin; }
 .live-bet-item { display: flex; justify-content: space-between; font-size: 0.8em; padding: 2px 0; border-bottom: 1px solid #4a5568; }
-.live-bet-item span:first-child { color: #ddd; }
-.live-bet-item span:last-child { color: #4caf50; font-weight: 600; }
 .aviator-graph-container { position: relative; flex-grow: 1; border-radius: 10px; overflow: hidden; }
 #aviator-canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
 #aviator-plane { position: absolute; width: 40px; height: 40px; z-index: 3; }
 #aviator-plane svg { fill: #ff5555; filter: drop-shadow(0 0 5px #ff5555); }
 #aviator-multiplier { width: 100%; height: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center; font-size: 4.5em; font-weight: 700; color: #fff; text-shadow: 0 0 20px rgba(255, 255, 255, 0.7); z-index: 2; }
-#aviator-multiplier.crashed { color: #ff5555; animation: shake 0.5s; }
-.flew-away-text { font-size: 0.5em; color: #fff; display: block; letter-spacing: 2px; }
 .bet-panels { flex-shrink: 0; display: grid; grid-template-columns: 1fr; gap: 8px; margin-top: 10px; }
 .bet-panel { background: #2b3544; border-radius: 10px; padding: 10px; display: flex; gap: 10px; align-items: center; }
 .amount-controls { flex-grow: 1; }
@@ -501,3 +72,16 @@ body {
 .bet-btn.waiting { background-color: #ffc107; box-shadow: 0 5px 0 #b38600; }
 .bet-btn.cashout { background-color: #ff8c00; box-shadow: 0 5px 0 #cc7000; }
 .bet-btn.cashed-out { background-color: #4a5568; box-shadow: 0 5px 0 #2d3748; }
+
+/* --- COLOR ARENA ADVANCED UI --- */
+.game-page { padding: 15px; }
+.game-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+.timer-card { background: rgba(20, 20, 35, 0.7); border: 1px solid rgba(102, 252, 241, 0.2); border-radius: 10px; padding: 15px; text-align: center; margin-bottom: 15px; }
+#countdown-bar-container { background: #0d0d1a; border-radius: 50px; height: 8px; margin-top: 10px; overflow: hidden; }
+#countdown-bar { background: linear-gradient(90deg, #66fcf1, #45a29e); height: 100%; border-radius: 50px; transition: width 1s linear; }
+#result-display { min-height: 60px; display: flex; justify-content: center; align-items: center; margin-bottom: 15px; }
+.bet-pads { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 15px; }
+.bet-pad { height: 80px; border-radius: 10px; display: flex; flex-direction:column; justify-content: center; align-items: center; font-size: 1.2em; font-weight: 700; color: #fff; cursor: pointer; transition: all 0.2s ease; }
+.bet-pad i { font-size: 1.5em; margin-bottom: 5px; }
+.bet-pad.disabled { opacity: 0.4; pointer-events: none; }
+.bet-pad.red { background: #dc3545; } .bet-pad.green { background: #28a745; } .bet-pad.blue { background: #007bff; }
