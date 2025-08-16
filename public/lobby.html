@@ -3,14 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <!-- New Font -->
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     <link rel="stylesheet" href="style.css">
     <title>Game Lobby</title>
 </head>
 <body>
-    <!-- Use the new container class -->
     <div class="page-container">
         <div class="profile-header">
             <div class="welcome-text">
@@ -22,7 +20,6 @@
                 <h2 id="balance">₹--.--</h2>
             </div>
         </div>
-
         <div class="game-list">
             <a href="/game.html" class="game-card">
                 <img src="https://placehold.co/600x400/0d0d1a/66fcf1?text=COLOR+WAVE" alt="Color Prediction Game">
@@ -41,52 +38,34 @@
         </div>
     </div>
 
-    <!-- Footer Navigation Bar -->
-    <nav class="footer-nav">
-        <a href="/lobby.html" class="nav-item active"><i class="fas fa-gamepad"></i><span>Games</span></a>
-        <a href="/deposit.html" class="nav-item"><i class="fas fa-wallet"></i><span>Deposit</span></a>
-        <a href="/withdrawal.html" class="nav-item"><i class="fas fa-money-bill-wave"></i><span>Withdraw</span></a>
-        <a href="/profile.html" class="nav-item"><i class="fas fa-user"></i><span>Profile</span></a>
-    </nav>
+    <!-- The Empty Footer Nav (will be filled by main.js) -->
+    <nav class="footer-nav"></nav>
+
+    <!-- Shared JS for navigation -->
+    <script src="/js/main.js"></script>
+    
+    <!-- Page-specific JS -->
     <script>
-// This file will be shared across pages
+        // Token is already defined in main.js, but we check it here for page access
+        if (!token) window.location.href = '/login.html';
 
-const token = localStorage.getItem('authToken');
+        async function fetchLobbyData() {
+            const user = decodeJwt(token);
+            if (user && user.email) {
+                document.getElementById('userEmail').textContent = user.email;
+            }
 
-// 1. JWT Decoder
-function decodeJwt(t) {
-    try {
-        return JSON.parse(atob(t.split('.')[1]));
-    } catch (e) {
-        return null;
-    }
-}
-
-// 2. Universal Logout Function
-function logout() {
-    localStorage.removeItem('authToken');
-    window.location.href = '/login.html';
-}
-
-// 3. Dynamic Footer Navigation Renderer
-document.addEventListener('DOMContentLoaded', () => {
-    const user = decodeJwt(token);
-    const navContainer = document.querySelector('.footer-nav');
-    if (!navContainer) return;
-
-    const path = window.location.pathname;
-
-    let navHTML = `
-        <a href="/lobby.html" class="nav-item ${path.includes('lobby') ? 'active' : ''}"><i class="fas fa-gamepad"></i><span>Games</span></a>
-        <a href="/deposit.html" class="nav-item ${path.includes('deposit') ? 'active' : ''}"><i class="fas fa-wallet"></i><span>Deposit</span></a>
-        <a href="/withdrawal.html" class="nav-item ${path.includes('withdrawal') ? 'active' : ''}"><i class="fas fa-money-bill-wave"></i><span>Withdraw</span></a>
-        <a href="/profile.html" class="nav-item ${path.includes('profile') ? 'active' : ''}"><i class="fas fa-user"></i><span>Profile</span></a>
-    `;
-
-    // If the user is an admin, add the admin tab
-    if (user && user.isAdmin) {
-        navHTML += `<a href="/admin.html" class="nav-item ${path.includes('admin') ? 'active' : ''}"><i class="fas fa-user-shield"></i><span>Admin</span></a>`;
-    }
-
-    navContainer.innerHTML = navHTML;
-});
+            const res = await fetch('/api/game/balance', { headers: { 'x-auth-token': token } });
+            if (res.ok) {
+                const data = await res.json();
+                document.getElementById('balance').textContent = `₹${data.balance.toFixed(2)}`;
+            } else {
+                logout(); // logout() is in main.js
+            }
+        }
+        
+        // Run the page-specific function after the main DOM is loaded
+        document.addEventListener('DOMContentLoaded', fetchLobbyData);
+    </script>
+</body>
+</html>
