@@ -1,34 +1,25 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
-    <link rel="stylesheet" href="style.css">
-    <title>Aviator X</title>
-</head>
+<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"><link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet"><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css"><link rel="stylesheet" href="style.css"><title>Aviator X</title></head>
 <body class="aviator-body">
-    <div class="phone-container">
     <div class="stars"></div>
-    <div class="aviator-page">
-        <div class="aviator-header"><a href="/lobby.html" class="back-btn"><i class="fas fa-arrow-left"></i></a><div class="balance-box">Balance: <span id="balance">--.--</span></div></div>
-        <div class="aviator-history-bar" id="aviator-history"></div>
-        <div class="aviator-main">
-            <div class="live-bets-container"><div class="live-bets-card"><h3>All Bets</h3><div class="live-bets-list" id="live-bets-list"></div></div><div class="live-bets-card"><h3>My Bets</h3><div class="live-bets-list" id="my-bets-list"></div></div></div>
-            <div class="aviator-graph-container">
-                <canvas id="aviator-canvas"></canvas>
-                <div id="aviator-plane"><svg viewBox="0 0 512 512"><path d="M473.1 43.1c-22.9-22.9-57.5-28.5-85.8-17.3L53.4 171.4c-21.5 8.5-35.3 29.3-35.3 52.2V416c0 23.5 15.2 44.7 37.6 51l44.3 12.5c19.4 5.5 39.5-2.2 51.8-19.1l84-118.1c12.2-17.1 38.3-17.1 50.4 0l84 118.1c12.3 16.9 32.4 24.6 51.8 19.1l44.3-12.5c22.4-6.3 37.6-27.5 37.6-51V128.9C501.7 100.6 496 66 473.1 43.1z"/></svg></div>
-                <div id="aviator-multiplier">1.00x</div>
+    <div class="phone-container">
+        <div class="aviator-page">
+            <div class="aviator-header"><a href="/lobby.html" class="back-btn"><i class="fas fa-arrow-left"></i></a><div class="balance-box">Balance: <span id="balance">--.--</span></div></div>
+            <div class="aviator-history-bar" id="aviator-history"></div>
+            <div class="aviator-main">
+                <div class="live-bets-container"><div class="live-bets-card"><h3>All Bets</h3><div class="live-bets-list" id="live-bets-list"></div></div><div class="live-bets-card"><h3>My Bets</h3><div class="live-bets-list" id="my-bets-list"></div></div></div>
+                <div class="aviator-graph-container">
+                    <canvas id="aviator-canvas"></canvas>
+                    <div id="aviator-plane"><svg viewBox="0 0 512 512"><path d="M473.1 43.1c-22.9-22.9-57.5-28.5-85.8-17.3L53.4 171.4c-21.5 8.5-35.3 29.3-35.3 52.2V416c0 23.5 15.2 44.7 37.6 51l44.3 12.5c19.4 5.5 39.5-2.2 51.8-19.1l84-118.1c12.2-17.1 38.3-17.1 50.4 0l84 118.1c12.3 16.9 32.4 24.6 51.8 19.1l44.3-12.5c22.4-6.3 37.6-27.5 37.6-51V128.9C501.7 100.6 496 66 473.1 43.1z"/></svg></div>
+                    <div id="aviator-multiplier">1.00x</div>
+                </div>
+            </div>
+            <div class="bet-panels">
+                <div class="bet-panel" id="panel1"><div class="amount-controls"><div class="amount-input-wrapper"><button class="adjust-btn">-</button><input class="bet-input" type="number" value="10" min="10"><button class="adjust-btn">+</button></div><div class="quick-bets"><button class="quick-bet-btn">100</button><button class="quick-bet-btn">200</button><button class="quick-bet-btn">500</button><button class="quick-bet-btn">1000</button></div></div><button class="bet-btn">BET</button></div>
+                <div class="bet-panel" id="panel2"><div class="amount-controls"><div class="amount-input-wrapper"><button class="adjust-btn">-</button><input class="bet-input" type="number" value="10" min="10"><button class="adjust-btn">+</button></div><div class="quick-bets"><button class="quick-bet-btn">100</button><button class="quick-bet-btn">200</button><button class="quick-bet-btn">500</button><button class="quick-bet-btn">1000</button></div></div><button class="bet-btn">BET</button></div>
             </div>
         </div>
-        <div class="bet-panels">
-            <div class="bet-panel" id="panel1"><div class="amount-controls"><div class="amount-input-wrapper"><button class="adjust-btn">-</button><input class="bet-input" type="number" value="10" min="10"><button class="adjust-btn">+</button></div><div class="quick-bets"><button class="quick-bet-btn">100</button><button class="quick-bet-btn">200</button><button class="quick-bet-btn">500</button><button class="quick-bet-btn">1000</button></div></div><button class="bet-btn">BET</button></div>
-            <div class="bet-panel" id="panel2"><div class="amount-controls"><div class="amount-input-wrapper"><button class="adjust-btn">-</button><input class="bet-input" type="number" value="10" min="10"><button class="adjust-btn">+</button></div><div class="quick-bets"><button class="quick-bet-btn">100</button><button class="quick-bet-btn">200</button><button class="quick-bet-btn">500</button><button class="quick-bet-btn">1000</button></div></div><button class="bet-btn">BET</button></div>
-        </div>
+        <nav class="footer-nav"></nav>
     </div>
-    <script src="/socket.io/socket.io.js"></script>
-    <script src="/js/main.js"></script>
-    <script src="/js/aviator.js"></script>
+    <script src="/socket.io/socket.io.js"></script><script src="/js/main.js"></script><script src="/js/aviator.js"></script>
 </body>
 </html>
