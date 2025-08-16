@@ -1,23 +1,46 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"><link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet"><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css"><link rel="stylesheet" href="style.css"><title>Deposit</title></head><body>
-<div class="page-container">
-    <div class="info-card"><h1>Deposit Funds</h1><p>1. Tap a button below to pay.</p><p>2. Copy the Transaction ID (UPI Ref ID).</p><p>3. Submit the ID here for approval.</p></div>
-    <div class="info-card"><h2>Scan & Pay or Tap to Pay</h2>
-        <a href="upi://pay?pa=irfananwar12@airtel&pn=Arnhub&cu=INR" class="upi-link">Pay with any UPI App</a>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+    <title>Deposit</title>
+</head>
+<body>
+    <div class="page-container">
+        <div class="info-card">
+            <h1>Deposit Funds</h1>
+            <p>1. Tap the link below to pay.</p>
+            <p>2. Copy the Transaction ID (UPI Ref ID).</p>
+            <p>3. Submit the ID here for approval.</p>
+        </div>
+        <div class="info-card">
+            <h2>Scan & Pay or Tap to Pay</h2>
+            <a href="upi://pay?pa=irfananwar12@airtel&pn=Arnhub&cu=INR" class="upi-link">Pay with any UPI App</a>
+        </div>
+        <div class="info-card">
+            <h2>Submit Proof of Payment</h2>
+            <form id="deposit-form">
+                <div class="input-group">
+                    <input type="number" id="deposit-amount" placeholder=" " required>
+                    <label for="deposit-amount">Amount you paid</label>
+                </div>
+                <div class="input-group">
+                    <input type="text" id="transaction-id" placeholder=" " required>
+                    <label for="transaction-id">UPI Transaction ID</label>
+                </div>
+                <button type="submit">Submit for Approval</button>
+            </form>
+            <p id="message" style="margin-top: 15px;"></p>
+        </div>
     </div>
-    <div class="info-card"><h2>Submit Proof of Payment</h2><form id="deposit-form">
-    <div class="input-group">
-        <input type="number" id="deposit-amount" placeholder=" " required>
-        <label for="deposit-amount">Amount you paid</label>
-    </div>
-    <div class="input-group">
-        <input type="text" id="transaction-id" placeholder=" " required>
-        <label for="transaction-id">UPI Transaction ID</label>
-    </div>
-    <button type="submit">Submit for Approval</button>
-    </form>
-</div>
-<nav class="footer-nav"></nav><script src="/js/main.js"></script><script>
-    if(!token)window.location.href='/login.html';
-    document.getElementById('deposit-form').addEventListener('submit',async e=>{e.preventDefault();const msgEl=document.getElementById('message');msgEl.textContent='Submitting...';const amount=Number(document.getElementById('deposit-amount').value);const transactionId=document.getElementById('transaction-id').value;const res=await fetch('/api/transaction/submit-deposit',{method:'POST',headers:{'Content-Type':'application/json','x-auth-token':token},body:JSON.stringify({amount,transactionId})});const data=await res.json();msgEl.textContent=data.message;if(res.ok){msgEl.style.color='lime';e.target.reset();}else{msgEl.style.color='red';}});
-</script></body>
+    <nav class="footer-nav"></nav>
+    <script src="/js/main.js"></script>
+    <script>
+        if(!token)window.location.href='/login.html';
+        document.getElementById('deposit-form').addEventListener('submit',async e=>{e.preventDefault();const msgEl=document.getElementById('message');msgEl.textContent='Submitting...';const amount=Number(document.getElementById('deposit-amount').value);const transactionId=document.getElementById('transaction-id').value;const res=await fetch('/api/transaction/submit-deposit',{method:'POST',headers:{'Content-Type':'application/json','x-auth-token':token},body:JSON.stringify({amount,transactionId})});const data=await res.json();msgEl.textContent=data.message;if(res.ok){msgEl.style.color='lime';e.target.reset();}else{msgEl.style.color='red';}});
+    </script>
+</body>
 </html>
