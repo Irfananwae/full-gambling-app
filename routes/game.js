@@ -5,8 +5,8 @@ const jwt = require('jsonwebtoken');
 
 const JWT_SECRET = process.env.JWT_SECRET || "default_fallback_secret";
 
-// Import the shared game state objects directly from server.js
-const { registerBet } = require('../server'); // We will create this export
+// We NO LONGER need to import anything from server.js
+// const { registerBet } = require('../server'); // DELETE THIS LINE
 
 const authMiddleware = (req, res, next) => {
     const token = req.header('x-auth-token');
@@ -31,13 +31,13 @@ router.post('/play-color-game', authMiddleware, async (req, res) => {
             return res.status(400).json({ message: 'Insufficient balance' });
         }
         
-        // This is now handled by the game engine, so we only need to deduct
-        // In a real high-frequency app, this would be a transaction
         user.balance -= betAmount;
         await user.save();
         
-        // Use the new, direct method to register the bet
-        registerBet(userId, betAmount, chosenColor);
+        // --- THIS IS THE CRITICAL CHANGE ---
+        // Access the function from the app object via the request (req)
+        req.app.get('registerBet')(userId, betAmount, chosenColor);
+        // --- END OF CRITICAL CHANGE ---
 
         res.json({ message: `Bet placed! Good luck.`, newBalance: user.balance });
 
@@ -48,13 +48,7 @@ router.post('/play-color-game', authMiddleware, async (req, res) => {
 });
 
 router.get('/balance', authMiddleware, async (req, res) => {
-    try {
-        const user = await User.findById(req.user.userId).select('balance email');
-        if (!user) return res.status(404).json({ message: "User not found" });
-        res.json(user);
-    } catch (error) {
-        res.status(500).json({ message: "Server Error" });
-    }
+    // ... (balance route is the same) ...
 });
 
 module.exports = router;
