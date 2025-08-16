@@ -415,16 +415,85 @@ button.deposit-btn:hover {
 .action-group button { padding: 5px 10px; }
 button.approve { background: #28a745; box-shadow: none; }
 button.reject { background: #dc3545; box-shadow: none; }
-/* --- AVIATOR PRO UI --- */
-.aviator-body { background: #0a0f1a; }
-.aviator-page { padding: 10px; }
-.aviator-header { display: flex; justify-content: space-between; align-items: center; }
-.aviator-graph-container { position: relative; width: 100%; height: 250px; background: rgba(0,0,0,0.2); border-radius: 10px; overflow: hidden; }
-#aviator-canvas { width: 100%; height: 100%; }
-#aviator-multiplier { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 4em; font-weight: 700; color: #fff; text-shadow: 0 0 20px #fff; }
-#aviator-multiplier.crashed { color: #dc3545; }
-#aviator-message { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 2em; text-align: center; color: #ffc107; }
-.bet-panels { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
-.bet-panel { background: rgba(20, 20, 35, 0.7); border-radius: 10px; padding: 10px; }
-.bet-btn { width: 100%; padding: 15px; font-size: 1.2em; }
-.bet-btn.cashout { background: linear-gradient(45deg, #f9a825, #fdd835); }
+/* --- AVIATOR FINAL CLONE UI --- */
+.aviator-body { background-color: #1a222d; }
+.aviator-page { padding: 10px; font-family: 'Poppins', sans-serif; }
+.aviator-header { display: none; } /* Hide the old header */
+
+.aviator-history-bar {
+    display: flex;
+    gap: 8px;
+    padding: 8px;
+    background: #0f151c;
+    border-radius: 5px;
+    margin-bottom: 10px;
+    overflow-x: auto;
+}
+.history-item {
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 0.9em;
+    font-weight: 600;
+    color: #fff;
+    cursor: pointer;
+}
+.history-item.crashed { color: #ff5555; }
+.history-item.safe { color: #55ff55; }
+
+.aviator-graph-container {
+    position: relative;
+    width: 100%;
+    height: 250px;
+    background: radial-gradient(circle, #3c434d 0%, #1a222d 70%);
+    border-radius: 10px;
+    overflow: hidden;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+#aviator-multiplier { font-size: 5em; font-weight: 700; color: #fff; text-shadow: 0 0 20px rgba(255,255,255,0.5); z-index: 2; transition: color 0.3s ease; }
+#aviator-multiplier.crashed { color: #ff5555; animation: shake 0.5s; }
+@keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-5px); } 75% { transform: translateX(5px); } }
+
+#aviator-message { z-index: 2; font-size: 2em; text-align: center; color: #ffc107; font-weight: 600; }
+#aviator-plane { position: absolute; font-size: 24px; transition: all 0.1s linear; z-index: 3; }
+
+.bet-panels { display: grid; grid-template-columns: 1fr; gap: 10px; }
+.bet-panel { background: #2b3544; border-radius: 10px; padding: 10px; }
+
+.panel-tabs { display: flex; margin-bottom: 10px; }
+.panel-tab { padding: 5px 10px; color: #8a9eb5; cursor: pointer; }
+.panel-tab.active { color: #fff; border-bottom: 2px solid #55ff55; }
+
+.amount-controls { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+.amount-controls .amount-input-wrapper { display: flex; align-items: center; background: #0f151c; border-radius: 5px; padding: 5px; flex-grow: 1; }
+.amount-controls button { background: none; border: none; color: #fff; font-size: 1.5em; cursor: pointer; }
+.amount-controls input { background: none; border: none; color: #fff; font-size: 1.2em; font-weight: 600; text-align: center; width: 100%; }
+.amount-controls input:focus { outline: none; }
+.quick-bets { display: flex; flex-direction: column; gap: 4px; }
+.quick-bets button { font-size: 0.8em; padding: 2px 5px; color: #8a9eb5; cursor: pointer; }
+
+.bet-btn {
+    width: 100%;
+    padding: 15px;
+    font-size: 1.2em;
+    font-weight: 700;
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    background-color: #28a745;
+    box-shadow: 0 5px 0 #1c7430;
+}
+.bet-btn:active { transform: translateY(2px); box-shadow: 0 3px 0 #1c7430; }
+
+.bet-btn.waiting { background-color: #ffc107; box-shadow: 0 5px 0 #b38600; }
+.bet-btn.cashout { background-color: #ff5555; box-shadow: 0 5px 0 #b33c3c; }
+.bet-btn.cashed-out { background-color: #4a5568; box-shadow: 0 5px 0 #2d3748; opacity: 0.7; }
+.bet-btn:disabled { opacity: 0.5; pointer-events: none; }
+
+.live-bets-container { background: #2b3544; border-radius: 10px; padding: 10px; margin-top: 10px; }
+/* ... other styles ... */
