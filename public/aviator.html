@@ -9,113 +9,109 @@
     <title>Aviator X</title>
 </head>
 <body class="aviator-body">
-    <!-- Animated Starfield Background -->
     <div class="stars"></div>
-
     <div class="aviator-page">
-        <!-- Header can be added here if needed, but we hide it for full-screen feel -->
+        <div class="aviator-header"><a href="/lobby.html" class="back-btn"><i class="fas fa-arrow-left"></i></a><div class="balance-box">Balance: <span id="balance">--.--</span></div></div>
         <div class="aviator-history-bar" id="aviator-history"></div>
         <div class="aviator-graph-container">
             <canvas id="aviator-canvas"></canvas>
-            <div id="aviator-plane">
-                <!-- Sleek SVG Plane -->
-                <svg viewBox="0 0 512 512" xml:space="preserve"><path d="M473.1,43.1c-22.9-22.9-57.5-28.5-85.8-17.3L53.4,171.4c-21.5,8.5-35.3,29.3-35.3,52.2V416c0,23.5,15.2,44.7,37.6,51l44.3,12.5c19.4,5.5,39.5-2.2,51.8-19.1l84-118.1c12.2-17.1,38.3-17.1,50.4,0l84,118.1c12.3,16.9,32.4,24.6,51.8,19.1l44.3-12.5c22.4-6.3,37.6-27.5,37.6-51V128.9C501.7,100.6,496,66,473.1,43.1z"/></svg>
-            </div>
+            <div id="aviator-plane"><svg viewBox="0 0 512 512"><path d="M473.1 43.1c-22.9-22.9-57.5-28.5-85.8-17.3L53.4 171.4c-21.5 8.5-35.3 29.3-35.3 52.2V416c0 23.5 15.2 44.7 37.6 51l44.3 12.5c19.4 5.5 39.5-2.2 51.8-19.1l84-118.1c12.2-17.1 38.3-17.1 50.4 0l84 118.1c12.3 16.9 32.4 24.6 51.8 19.1l44.3-12.5c22.4-6.3 37.6-27.5 37.6-51V128.9C501.7 100.6 496 66 473.1 43.1z"/></svg></div>
             <div id="aviator-multiplier">1.00x</div>
         </div>
         <div class="bet-panels">
-            <!-- Bet Panel 1 -->
             <div class="bet-panel" id="panel1"><div class="amount-controls"><div class="amount-input-wrapper"><button class="adjust-btn">-</button><input class="bet-input" type="number" value="10" min="10"><button class="adjust-btn">+</button></div><div class="quick-bets"><button class="quick-bet-btn">100</button><button class="quick-bet-btn">200</button><button class="quick-bet-btn">500</button><button class="quick-bet-btn">1000</button></div></div><button class="bet-btn">BET</button></div>
-            <!-- Bet Panel 2 -->
             <div class="bet-panel" id="panel2"><div class="amount-controls"><div class="amount-input-wrapper"><button class="adjust-btn">-</button><input class="bet-input" type="number" value="10" min="10"><button class="adjust-btn">+</button></div><div class="quick-bets"><button class="quick-bet-btn">100</button><button class="quick-bet-btn">200</button><button class="quick-bet-btn">500</button><button class="quick-bet-btn">1000</button></div></div><button class="bet-btn">BET</button></div>
         </div>
-        <!-- Live Bets Feed (can be added here) -->
+        <div class="live-bets-container"><div class="live-bets-tabs"><div class="live-bets-tab active">All Bets</div></div><div class="live-bets-list" id="live-bets-list"></div></div>
     </div>
-    <script src="/socket.io/socket.io.js"></script>
-    <script src="/js/main.js"></script>
+    <audio id="sound-bet" src="https://cdn.pixabay.com/download/audio/2022/03/15/audio_2b2360255d.mp3"></audio><audio id="sound-cashout" src="https://cdn.pixabay.com/download/audio/2022/03/10/audio_c394c03498.mp3"></audio><audio id="sound-crash" src="https://cdn.pixabay.com/download/audio/2022/03/15/audio_152398d578.mp3"></audio>
+    <script src="/socket.io/socket.io.js"></script><script src="/js/main.js"></script>
     <script>
+        // --- COMPLETE & WORKING AVIATOR SCRIPT ---
         if (!token) window.location.href = '/login.html';
         const socket = io();
         socket.on('connect', () => socket.emit('authenticate', token));
 
-        const multiplierEl = document.getElementById('aviator-multiplier');
-        const planeEl = document.getElementById('aviator-plane');
-        const canvas = document.getElementById('aviator-canvas'), ctx = canvas.getContext('2d');
+        const balanceEl = document.getElementById('balance'), historyEl = document.getElementById('aviator-history'), multiplierEl = document.getElementById('aviator-multiplier'), planeEl = document.getElementById('aviator-plane'), canvas = document.getElementById('aviator-canvas'), ctx = canvas.getContext('2d'), liveBetsEl = document.getElementById('live-bets-list');
         let currentMultiplier = 1.00, pathPoints = [], animationFrameId;
-
-        const panels = {
-            panel1: { id: 'panel1', el: document.getElementById('panel1'), input: document.querySelector('#panel1 .bet-input'), btn: document.querySelector('#panel1 .bet-btn'), state: 'idle', betAmount: 0 },
-            panel2: { id: 'panel2', el: document.getElementById('panel2'), input: document.querySelector('#panel2 .bet-input'), btn: document.querySelector('#panel2 .bet-btn'), state: 'idle', betAmount: 0 }
-        };
-
+        const sounds = { bet: document.getElementById('sound-bet'), cashout: document.getElementById('sound-cashout'), crash: document.getElementById('sound-crash') };
+        const panels = { panel1: { id: 'panel1', el: document.getElementById('panel1'), input: document.querySelector('#panel1 .bet-input'), btn: document.querySelector('#panel1 .bet-btn'), state: 'idle', betAmount: 0 }, panel2: { id: 'panel2', el: document.getElementById('panel2'), input: document.querySelector('#panel2 .bet-input'), btn: document.querySelector('#panel2 .bet-btn'), state: 'idle', betAmount: 0 }};
+        
         function resizeCanvas() { canvas.width = canvas.clientWidth; canvas.height = canvas.clientHeight; }
         window.addEventListener('resize', resizeCanvas); resizeCanvas();
 
-        function drawPath() {
+        function renderAnimation() {
             const w = canvas.width, h = canvas.height;
-            const planeX = (currentMultiplier - 1) * (w / 15);
-            const planeY = h - Math.pow(planeX / w, 0.6) * h * 0.9 - 25;
-            
-            const prevPoint = pathPoints[pathPoints.length - 1] || [0, h];
+            const curvePower = 0.6;
+            const planeX = Math.min((currentMultiplier - 1) * (w / 15), w - 40);
+            const planeY = h - Math.pow(planeX / w, curvePower) * h * 0.9 - 25;
+            const prevPoint = pathPoints.length > 0 ? pathPoints[pathPoints.length - 1] : [0, h];
             const angle = Math.atan2(planeY - prevPoint[1], planeX - prevPoint[0]);
             planeEl.style.transform = `translate(${planeX}px, ${planeY}px) rotate(${angle + Math.PI / 2}rad)`;
-
-            ctx.clearRect(0, 0, w, h);
-            pathPoints.push([planeX, planeY]);
-            
-            ctx.strokeStyle = '#ff5555';
-            ctx.lineWidth = 4;
-            ctx.shadowColor = '#ff5555';
-            ctx.shadowBlur = 10;
-            ctx.beginPath();
-            ctx.moveTo(pathPoints[0][0], pathPoints[0][1]);
+            ctx.clearRect(0, 0, w, h); pathPoints.push([planeX, planeY]);
+            ctx.strokeStyle = '#ff5555'; ctx.lineWidth = 4; ctx.shadowColor = '#ff5555'; ctx.shadowBlur = 10;
+            ctx.beginPath(); ctx.moveTo(pathPoints[0][0], pathPoints[0][1]);
             for (let i = 1; i < pathPoints.length; i++) ctx.lineTo(pathPoints[i][0], pathPoints[i][1]);
             ctx.stroke();
+            animationFrameId = requestAnimationFrame(renderAnimation);
         }
 
         socket.on('aviatorState', (state) => {
             if (state.phase === 'waiting') {
+                cancelAnimationFrame(animationFrameId); animationFrameId = null;
                 const waitTime = Math.ceil((state.startTime - Date.now()) / 1000);
                 multiplierEl.innerHTML = `<div>Starting in ${waitTime > 0 ? waitTime : 0}s</div>`;
                 multiplierEl.className = 'waiting'; planeEl.style.display = 'none'; pathPoints = [];
-                Object.values(panels).forEach(p => updatePanelUI(p, 'idle'));
-                updateHistory(state.history);
+                Object.values(panels).forEach(p => updatePanelUI(p, 'idle')); updateHistory(state.history);
             } else if (state.phase === 'playing') {
                 planeEl.style.display = 'block'; multiplierEl.className = 'playing';
                 multiplierEl.textContent = `${state.multiplier.toFixed(2)}x`;
                 currentMultiplier = state.multiplier;
                 Object.values(panels).forEach(p => { if (p.state === 'waiting_for_round') updatePanelUI(p, 'in_game'); });
-                drawPath();
+                if (!animationFrameId) renderAnimation();
             } else if (state.phase === 'crashed') {
+                cancelAnimationFrame(animationFrameId); animationFrameId = null;
                 multiplierEl.className = 'crashed';
                 multiplierEl.innerHTML = `<span class="flew-away-text">FLEW AWAY!</span>${state.multiplier.toFixed(2)}x`;
-                planeEl.style.display = 'none';
+                planeEl.style.display = 'none'; sounds.crash.play();
                 Object.values(panels).forEach(p => { if (p.state === 'in_game') updatePanelUI(p, 'idle'); });
             }
         });
 
+        socket.on('aviatorNewBet', data => { if(!data.email) return; const betDiv = document.createElement('div'); betDiv.className = 'live-bet-item'; betDiv.innerHTML = `<span>${data.email.split('@')[0]}</span><span>₹${Number(data.betAmount).toFixed(2)}</span>`; liveBetsEl.prepend(betDiv); if (liveBetsEl.children.length > 10) liveBetsEl.lastChild.remove(); });
+        
         function updatePanelUI(panel, newState) {
             panel.state = newState;
             const controlsDisabled = newState !== 'idle';
             panel.input.disabled = controlsDisabled;
             panel.el.querySelectorAll('.adjust-btn, .quick-bet-btn').forEach(b => b.disabled = controlsDisabled);
             switch(newState) {
-                case 'idle': panel.btn.textContent = `BET (₹${panel.input.value})`; panel.btn.className = 'bet-btn'; break;
-                case 'waiting_for_round': panel.btn.textContent = 'WAITING...'; panel.btn.className = 'bet-btn waiting'; break;
-                case 'in_game': panel.btn.textContent = `CASH OUT ₹${(panel.betAmount * currentMultiplier).toFixed(2)}`; panel.btn.className = 'bet-btn cashout'; break;
+                case 'idle': panel.btn.textContent = `BET (₹${panel.input.value})`; panel.btn.className = 'bet-btn'; panel.btn.disabled = false; break;
+                case 'waiting_for_round': panel.btn.textContent = 'WAITING...'; panel.btn.className = 'bet-btn waiting'; panel.btn.disabled = true; break;
+                case 'in_game': panel.btn.textContent = `CASH OUT`; panel.btn.className = 'bet-btn cashout'; panel.btn.disabled = false; break;
                 case 'cashed_out': panel.btn.textContent = `CASHED OUT`; panel.btn.className = 'bet-btn cashed-out'; panel.btn.disabled = true; break;
             }
         }
         
         Object.values(panels).forEach(panel => {
             const betBtn = panel.btn, input = panel.input;
-            betBtn.onclick = () => { /* Bet/Cashout logic is the same as before */ };
-            input.oninput = () => { if(panel.state === 'idle') betBtn.textContent = `BET (₹${input.value})`; };
-            // ... all other panel event listeners are the same ...
+            betBtn.onclick = () => {
+                if (panel.state === 'idle') {
+                    const amount = Number(input.value); if (!amount || amount < 10) return; sounds.bet.play();
+                    fetch('/api/aviator/place-bet', {method:'POST',headers:{'Content-Type':'application/json','x-auth-token':token},body:JSON.stringify({betAmount:amount,betPanelId:panel.id})}).then(r=>r.json()).then(d=>{if(d.newBalance!==undefined){panel.betAmount=amount;updatePanelUI(panel,'waiting_for_round');}else{alert(d.message);}});
+                } else if (panel.state === 'in_game') {
+                    sounds.cashout.play();
+                    fetch('/api/aviator/cash-out', {method:'POST',headers:{'Content-Type':'application/json','x-auth-token':token},body:JSON.stringify({betPanelId:panel.id})}).then(r=>r.json()).then(d=>{if(d.newBalance!==undefined){updatePanelUI(panel,'cashed_out');}else{alert(d.message);}});
+                }
+            };
+            input.oninput = () => { if (panel.state === 'idle') betBtn.textContent = `BET (₹${input.value})`; };
+            panel.el.querySelector('.adjust-btn:first-of-type').onclick = () => { input.stepDown(); input.oninput(); };
+            panel.el.querySelector('.adjust-btn:last-of-type').onclick = () => { input.stepUp(); input.oninput(); };
+            panel.el.querySelectorAll('.quick-bet-btn').forEach(b=>b.onclick=()=>{input.value=b.textContent; input.oninput();});
         });
-
-        function updateHistory(history) { /* Render history items is the same */ }
-        // ... balance update and initial fetch logic is the same ...
+        function updateHistory(history) { if(!history) return; historyEl.innerHTML = ''; history.slice(0, 15).forEach(h => { const item = document.createElement('div'); item.className = `history-item ${h.multiplier >= 2 ? 'safe' : 'crashed'}`; item.textContent = `${h.multiplier.toFixed(2)}x`; historyEl.appendChild(item); }); }
+        socket.on('balanceUpdate', data => balanceEl.textContent = `₹${data.newBalance.toFixed(2)}`);
+        document.addEventListener('DOMContentLoaded', () => fetch('/api/game/balance', { headers: { 'x-auth-token': token }}).then(r=>r.json()).then(d=>balanceEl.textContent=`₹${d.balance.toFixed(2)}`));
     </script>
 </body>
 </html>
