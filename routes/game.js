@@ -1,9 +1,12 @@
 const express = require('express');
-const router = express.Router(); // This line creates the router
+const router = express.Router();
 const User = require('../models/User');
 const jwt = require('jsonwebtoken');
 
 const JWT_SECRET = process.env.JWT_SECRET || "default_fallback_secret";
+
+// Import the shared game state objects directly from server.js
+const { registerBet } = require('../server'); // We will create this export
 
 const authMiddleware = (req, res, next) => {
     const token = req.header('x-auth-token');
@@ -28,11 +31,13 @@ router.post('/play-color-game', authMiddleware, async (req, res) => {
             return res.status(400).json({ message: 'Insufficient balance' });
         }
         
+        // This is now handled by the game engine, so we only need to deduct
+        // In a real high-frequency app, this would be a transaction
         user.balance -= betAmount;
         await user.save();
         
-        // This is the corrected line that fixes the crash
-        req.app.get('registerBet')(userId, betAmount, chosenColor);
+        // Use the new, direct method to register the bet
+        registerBet(userId, betAmount, chosenColor);
 
         res.json({ message: `Bet placed! Good luck.`, newBalance: user.balance });
 
@@ -41,3 +46,15 @@ router.post('/play-color-game', authMiddleware, async (req, res) => {
         res.status(500).json({ message: 'Server error during game play.' });
     }
 });
+
+router.get('/balance', authMiddleware, async (req, res) => {
+    try {
+        const user = await User.findById(req.user.userId).select('balance email');
+        if (!user) return res.status(404).json({ message: "User not found" });
+        res.json(user);
+    } catch (error) {
+        res.status(500).json({ message: "Server Error" });
+    }
+});
+
+module.exports = router;
