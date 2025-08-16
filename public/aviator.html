@@ -9,7 +9,8 @@
     <title>Aviator X</title>
 </head>
 <body class="aviator-body">
-    <div class="page-container aviator-page">
+<div class="phone-container">
+    <div class="aviator-page">
         <div class="aviator-history-bar" id="aviator-history"></div>
         <div class="aviator-graph-container">
             <canvas id="aviator-canvas"></canvas>
@@ -17,135 +18,112 @@
             <div id="aviator-message"></div>
             <div id="aviator-multiplier">1.00x</div>
         </div>
-
         <div class="bet-panels">
             <!-- Bet Panel 1 -->
-            <div class="bet-panel" id="panel1">
-                <div class="panel-tabs"><div class="panel-tab active">Bet</div><div class="panel-tab">Auto</div></div>
-                <div class="controls-grid">
-                    <div class="amount-controls">
-                        <div class="amount-input-wrapper"><button class="adjust-btn">-</button><input type="number" value="10.00" min="10"><button class="adjust-btn">+</button></div>
-                        <div class="quick-bets"><button>100</button><button>200</button><button>500</button><button>1000</button></div>
-                    </div>
-                    <button class="bet-btn">BET</button>
-                </div>
-            </div>
+            <div class="bet-panel" id="panel1"><div class="amount-controls"><div class="amount-input-wrapper"><button class="adjust-btn">-</button><input class="bet-input" type="number" value="10" min="10"><button class="adjust-btn">+</button></div><div class="quick-bets"><button class="quick-bet-btn">100</button><button class="quick-bet-btn">200</button><button class="quick-bet-btn">500</button><button class="quick-bet-btn">1000</button></div></div><button class="bet-btn">BET</button></div>
             <!-- Bet Panel 2 -->
-            <div class="bet-panel" id="panel2">
-                <div class="panel-tabs"><div class="panel-tab active">Bet</div><div class="panel-tab">Auto</div></div>
-                <div class="controls-grid">
-                    <div class="amount-controls">
-                        <div class="amount-input-wrapper"><button class="adjust-btn">-</button><input type="number" value="10.00" min="10"><button class="adjust-btn">+</button></div>
-                        <div class="quick-bets"><button>100</button><button>200</button><button>500</button><button>1000</button></div>
-                    </div>
-                    <button class="bet-btn">BET</button>
-                </div>
-            </div>
+            <div class="bet-panel" id="panel2"><div class="amount-controls"><div class="amount-input-wrapper"><button class="adjust-btn">-</button><input class="bet-input" type="number" value="10" min="10"><button class="adjust-btn">+</button></div><div class="quick-bets"><button class="quick-bet-btn">100</button><button class="quick-bet-btn">200</button><button class="quick-bet-btn">500</button><button class="quick-bet-btn">1000</button></div></div><button class="bet-btn">BET</button></div>
         </div>
-
-        <div class="live-bets-container">
-            <!-- All Bets / My Bets / Top tabs would go here -->
-        </div>
+        <div class="live-bets-container"><div class="live-bets-tabs"><div class="live-bets-tab active">All Bets</div></div><div class="live-bets-list" id="live-bets-list"></div></div>
     </div>
-    <nav class="footer-nav"></nav> <!-- Your standard footer nav -->
+</div>
+<script src="/socket.io/socket.io.js"></script><script src="/js/main.js"></script>
+<script>
+    if (!token) window.location.href = '/login.html';
+    const socket = io();
+    socket.on('connect', () => socket.emit('authenticate', token));
 
-    <script src="/socket.io/socket.io.js"></script>
-    <script src="/js/main.js"></script>
-    <script>
-        if (!token) window.location.href = '/login.html';
-        const socket = io();
-        socket.on('connect', () => socket.emit('authenticate', token));
+    const multiplierEl = document.getElementById('aviator-multiplier'), messageEl = document.getElementById('aviator-message'), planeEl = document.getElementById('aviator-plane');
+    const canvas = document.getElementById('aviator-canvas'), ctx = canvas.getContext('2d');
+    let currentMultiplier = 1.00, pathPoints = [];
 
-        const balanceEl = document.querySelector('.balance-box span'); // Update if you add a balance box
-        const historyEl = document.getElementById('aviator-history');
-        const multiplierEl = document.getElementById('aviator-multiplier');
-        const messageEl = document.getElementById('aviator-message');
-        const planeEl = document.getElementById('aviator-plane');
-        const canvas = document.getElementById('aviator-canvas');
-        const ctx = canvas.getContext('2d');
-        let currentMultiplier = 1.00;
+    const panels = {
+        panel1: { id: 'panel1', el: document.getElementById('panel1'), input: document.querySelector('#panel1 .bet-input'), btn: document.querySelector('#panel1 .bet-btn'), state: 'idle', betAmount: 0 },
+        panel2: { id: 'panel2', el: document.getElementById('panel2'), input: document.querySelector('#panel2 .bet-input'), btn: document.querySelector('#panel2 .bet-btn'), state: 'idle', betAmount: 0 }
+    };
+    function resizeCanvas() { canvas.width = canvas.clientWidth; canvas.height = canvas.clientHeight; }
+    window.addEventListener('resize', resizeCanvas); resizeCanvas();
 
-        const panels = {
-            panel1: { id: 'panel1', el: document.getElementById('panel1'), input: document.querySelector('#panel1 input'), btn: document.querySelector('#panel1 .bet-btn'), state: 'idle', betAmount: 0 },
-            panel2: { id: 'panel2', el: document.getElementById('panel2'), input: document.querySelector('#panel2 input'), btn: document.querySelector('#panel2 .bet-btn'), state: 'idle', betAmount: 0 }
+    function draw(multiplier) {
+        const w = canvas.width, h = canvas.height;
+        const curvePower = 0.6;
+        const planeX = Math.min((multiplier - 1) * (w / 15), w - 30);
+        const planeY = h - Math.pow(planeX / w, curvePower) * h * 0.9 - 25;
+        planeEl.style.transform = `translate(${planeX}px, ${planeY}px) rotate(${45 - (planeX/w)*45}deg)`;
+        ctx.clearRect(0, 0, w, h);
+        if (pathPoints.length === 0 || multiplier === 1.00) pathPoints = [[-10, h+5]];
+        pathPoints.push([planeX, planeY]);
+        ctx.strokeStyle = 'rgba(255, 85, 85, 0.8)'; ctx.lineWidth = 4; ctx.beginPath();
+        ctx.moveTo(pathPoints[0][0], pathPoints[0][1]);
+        for(let i=1; i < pathPoints.length; i++) ctx.lineTo(pathPoints[i][0], pathPoints[i][1]);
+        ctx.stroke();
+    }
+
+    socket.on('aviatorState', (state) => {
+        messageEl.style.display = 'none'; multiplierEl.style.display = 'block';
+        if (state.phase === 'waiting') {
+            const waitTime = Math.ceil((state.startTime - Date.now()) / 1000);
+            multiplierEl.innerHTML = `<div>Starting in ${waitTime > 0 ? waitTime : 0}s</div>`;
+            multiplierEl.className = 'waiting'; planeEl.style.display = 'none'; pathPoints = [];
+            Object.values(panels).forEach(p => updatePanelUI(p, 'idle'));
+            updateHistory(state.history); draw(1);
+        } else if (state.phase === 'playing') {
+            planeEl.style.display = 'block'; multiplierEl.className = 'playing';
+            multiplierEl.textContent = `${state.multiplier.toFixed(2)}x`;
+            currentMultiplier = state.multiplier;
+            Object.values(panels).forEach(p => { if (p.state === 'waiting_for_round') updatePanelUI(p, 'in_game'); });
+            draw(state.multiplier);
+        } else if (state.phase === 'crashed') {
+            multiplierEl.className = 'crashed';
+            multiplierEl.innerHTML = `<span class="flew-away-text">FLEW AWAY!</span>${state.multiplier.toFixed(2)}x`;
+            planeEl.style.display = 'none';
+            Object.values(panels).forEach(p => { if(p.state === 'in_game') updatePanelUI(p, 'idle'); });
+        }
+    });
+
+    function updatePanelUI(panel, newState) {
+        panel.state = newState;
+        const controlsDisabled = newState !== 'idle';
+        panel.input.disabled = controlsDisabled;
+        panel.el.querySelectorAll('.adjust-btn, .quick-bet-btn').forEach(b => b.disabled = controlsDisabled);
+        switch(newState) {
+            case 'idle': panel.btn.textContent = `BET (₹${panel.input.value})`; panel.btn.className = 'bet-btn'; break;
+            case 'waiting_for_round': panel.btn.textContent = 'WAITING...'; panel.btn.className = 'bet-btn waiting'; break;
+            case 'in_game': panel.btn.textContent = `CASH OUT ₹${(panel.betAmount * currentMultiplier).toFixed(2)}`; panel.btn.className = 'bet-btn cashout'; break;
+            case 'cashed_out': panel.btn.textContent = `CASHED OUT`; panel.btn.className = 'bet-btn cashed-out'; panel.btn.disabled = true; break;
+        }
+    }
+
+    Object.values(panels).forEach(panel => {
+        const betBtn = panel.btn;
+        const input = panel.input;
+        betBtn.onclick = () => {
+            if (panel.state === 'idle') {
+                const amount = Number(input.value);
+                if (!amount || amount < 10) return;
+                fetch('/api/aviator/place-bet', {method:'POST',headers:{'Content-Type':'application/json','x-auth-token':token},body:JSON.stringify({betAmount:amount,betPanelId:panel.id})})
+                .then(r=>r.json()).then(d=>{if(d.newBalance!==undefined){panel.betAmount=amount;updatePanelUI(panel,'waiting_for_round');}else{alert(d.message);}});
+            } else if (panel.state === 'in_game') {
+                fetch('/api/aviator/cash-out', {method:'POST',headers:{'Content-Type':'application/json','x-auth-token':token},body:JSON.stringify({betPanelId:panel.id})})
+                .then(r=>r.json()).then(d=>{if(d.newBalance!==undefined){updatePanelUI(panel,'cashed_out');}else{alert(d.message);}});
+            }
         };
-
-        function resizeCanvas() { canvas.width = canvas.clientWidth; canvas.height = canvas.clientHeight; }
-        window.addEventListener('resize', resizeCanvas);
-        resizeCanvas();
-
-        let pathPoints = [];
-        function draw(multiplier) {
-            const w = canvas.width;
-            const h = canvas.height;
-            const planeX = Math.min((multiplier - 1) * (w / 8), w - 30); // Move slower, cap at edge
-            const planeY = h - Math.pow(planeX / w, 0.5) * h * 0.8 - 20; // Smoother curve
-
-            planeEl.style.left = `${planeX}px`;
-            planeEl.style.top = `${planeY}px`;
-            
-            ctx.clearRect(0, 0, w, h);
-            if(pathPoints.length === 0 || multiplier === 1.00) pathPoints = [[0, h]];
-
-            pathPoints.push([planeX, planeY]);
-            
-            ctx.strokeStyle = '#ff5555';
-            ctx.lineWidth = 4;
-            ctx.beginPath();
-            ctx.moveTo(pathPoints[0][0], pathPoints[0][1]);
-            for(let i = 1; i < pathPoints.length; i++) {
-                ctx.lineTo(pathPoints[i][0], pathPoints[i][1]);
-            }
-            ctx.stroke();
-        }
-
-        socket.on('aviatorState', (state) => {
-            messageEl.style.display = 'none';
-            multiplierEl.style.display = 'block';
-
-            if (state.phase === 'waiting') {
-                const waitTime = Math.ceil((state.startTime - Date.now()) / 1000);
-                multiplierEl.textContent = `Starting in ${waitTime > 0 ? waitTime : 0}s`;
-                multiplierEl.className = 'waiting';
-                planeEl.style.display = 'none';
-                pathPoints = [];
-                Object.values(panels).forEach(p => updatePanelUI(p, 'idle'));
-                updateHistory(state.history);
-            } else if (state.phase === 'playing') {
-                planeEl.style.display = 'block';
-                multiplierEl.className = 'playing';
-                multiplierEl.textContent = `${state.multiplier.toFixed(2)}x`;
-                currentMultiplier = state.multiplier;
-                Object.values(panels).forEach(p => { if (p.state === 'waiting_for_round') updatePanelUI(p, 'in_game'); });
-                draw(state.multiplier);
-            } else if (state.phase === 'crashed') {
-                multiplierEl.className = 'crashed';
-                messageEl.style.display = 'block';
-                messageEl.innerHTML = `FLEW AWAY!`;
-                planeEl.style.display = 'none';
-                Object.values(panels).forEach(p => updatePanelUI(p, 'idle'));
-            }
+        input.oninput = () => { if(panel.state === 'idle') betBtn.textContent = `BET (₹${input.value})`; };
+        panel.el.querySelector('.adjust-btn:first-of-type').onclick = () => { input.stepDown(); input.oninput(); };
+        panel.el.querySelector('.adjust-btn:last-of-type').onclick = () => { input.stepUp(); input.oninput(); };
+        panel.el.querySelectorAll('.quick-bet-btn').forEach(b=>b.onclick=()=>{input.value=b.textContent; input.oninput();});
+    });
+    
+    function updateHistory(history) {
+        if(!history) return;
+        historyEl.innerHTML = '';
+        history.slice(0, 15).forEach(h => {
+            const item = document.createElement('div');
+            item.className = `history-item ${h.multiplier >= 2 ? 'safe' : 'crashed'}`;
+            item.textContent = `${h.multiplier.toFixed(2)}x`;
+            historyEl.appendChild(item);
         });
-
-        function updatePanelUI(panel, newState) {
-            panel.state = newState;
-            panel.input.disabled = newState !== 'idle';
-            panel.el.querySelectorAll('.adjust-btn, .quick-bets button').forEach(b => b.disabled = newState !== 'idle');
-            switch(newState) {
-                case 'idle': panel.btn.textContent = `BET`; panel.btn.className = 'bet-btn'; break;
-                case 'waiting_for_round': panel.btn.textContent = 'WAITING...'; panel.btn.className = 'bet-btn waiting'; break;
-                case 'in_game': panel.btn.textContent = `CASH OUT ₹${(panel.betAmount * currentMultiplier).toFixed(2)}`; panel.btn.className = 'bet-btn cashout'; break;
-                case 'cashed_out': panel.btn.textContent = `YOU CASHED OUT`; panel.btn.className = 'bet-btn cashed-out'; panel.btn.disabled = true; break;
-            }
-        }
-
-        Object.values(panels).forEach(panel => {
-            panel.btn.onclick = () => { /* Bet/Cashout logic here */ };
-            // Add listeners for +, -, and quick bet buttons to update panel.input.value
-        });
-        
-        function updateHistory(history) { /* Render history items here */ }
-        // Fetch balance and other initializations
-    </script>
+    }
+</script>
 </body>
 </html>
