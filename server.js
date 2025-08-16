@@ -196,6 +196,7 @@ async function startServer() {
         console.log('✅ MongoDB Connected!');
         app.use('/api/auth', require('./routes/auth'));
         app.use('/api/game', require('./routes/game'));
+        app.use('/api/galaxy', require('./routes/galaxy'));
         app.use('/api/transaction', require('./routes/transaction'));
         app.use('/api/admin', require('./routes/admin'));
         app.use('/api/aviator', require('./routes/aviator')); // <-- ADD THIS NEW ROUTE
