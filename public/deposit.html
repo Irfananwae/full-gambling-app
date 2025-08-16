@@ -4,7 +4,17 @@
     <div class="info-card"><h2>Scan & Pay or Tap to Pay</h2>
         <a href="upi://pay?pa=irfananwar12@airtel&pn=Arnhub&cu=INR" class="upi-link">Pay with any UPI App</a>
     </div>
-    <div class="info-card"><h2>Submit Proof of Payment</h2><form id="deposit-form"><input type="number" id="deposit-amount" placeholder="Amount you paid" required><input type="text" id="transaction-id" placeholder="Enter UPI Transaction ID" required><button type="submit">Submit for Approval</button></form><p id="message"></p></div>
+    <div class="info-card"><h2>Submit Proof of Payment</h2><form id="deposit-form">
+    <div class="input-group">
+        <input type="number" id="deposit-amount" placeholder=" " required>
+        <label for="deposit-amount">Amount you paid</label>
+    </div>
+    <div class="input-group">
+        <input type="text" id="transaction-id" placeholder=" " required>
+        <label for="transaction-id">UPI Transaction ID</label>
+    </div>
+    <button type="submit">Submit for Approval</button>
+    </form>
 </div>
 <nav class="footer-nav"></nav><script src="/js/main.js"></script><script>
     if(!token)window.location.href='/login.html';
