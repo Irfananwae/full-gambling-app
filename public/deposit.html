@@ -1,10 +1,34 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"><title>Deposit</title><link rel="stylesheet" href="style.css"><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css"></head><body>
-<div class="page-container">
-    <div class="info-card">
-        <h1>Deposit Funds</h1><p>1. Pay to the UPI ID below.</p><p>2. Take a screenshot of the payment.</p><p>3. Contact support with the screenshot to have your balance updated.</p>
-        <div class="upi-info"><h2>UPI ID:</h2><p class="upi-id">irfananwar12@airtel</p></div>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+    <title>Deposit</title>
+</head>
+<body>
+    <div class="page-container">
+        <div class="info-card">
+            <h1>Deposit Funds</h1>
+            <p>1. Pay to the UPI ID below.</p>
+            <p>2. Take a screenshot of the payment.</p>
+            <p>3. Contact support with the screenshot and your User ID (your email) to have your balance updated by an admin.</p>
+            <div class="upi-info" style="margin-top: 20px;">
+                <h2>UPI ID:</h2>
+                <p style="font-size:1.2em; font-weight:600; color:#4caf50;">irfananwar12@airtel</p>
+            </div>
+        </div>
     </div>
-</div>
-<nav class="footer-nav"><a href="/lobby.html" class="nav-item"><i class="fas fa-gamepad"></i><span>Games</span></a><a href="/deposit.html" class="nav-item active"><i class="fas fa-wallet"></i><span>Deposit</span></a><a href="/withdrawal.html" class="nav-item"><i class="fas fa-money-bill-wave"></i><span>Withdraw</span></a><a href="/profile.html" class="nav-item"><i class="fas fa-user"></i><span>Profile</span></a></nav>
-<style>.upi-info{background:#111;padding:15px;border-radius:8px;}.upi-id{font-size:1.2em;font-weight:bold;color:#4caf50;}</style>
-</body></html>
+
+    <!-- The Empty Footer Nav (will be filled by main.js) -->
+    <nav class="footer-nav"></nav>
+
+    <!-- Shared JS for navigation and token check -->
+    <script src="/js/main.js"></script>
+    <script>
+        if (!token) window.location.href = '/login.html';
+    </script>
+</body>
+</html>
