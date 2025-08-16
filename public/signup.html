@@ -1,51 +1,16 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Sign Up</title>
-    <link rel="stylesheet" href="style.css">
-</head>
-<body>
-    <div class="form-card">
-        <h2>Create Account</h2>
-        <form id="registerForm">
-            <input type="email" id="signupEmail" name="email" placeholder="Enter your email" required>
-            <input type="password" id="signupPassword" name="password" placeholder="Create a password" required>
-            <button type="submit">Sign Up</button>
-        </form>
-        <p id="message"></p>
-        <br>
-        <p>Already have an account? <a href="/login.html">Login here</a></p>
-    </div>
-    
-    <script>
-    const API_BASE = '/api/auth';
-    const msgEl = document.getElementById('message');
+<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"><link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet"><link rel="stylesheet" href="style.css"><title>Sign Up</title></head><body>
+<div class="page-container"><div class="info-card" style="margin-top: 50px;"><h2>Create Account</h2><p>Get your ₹20 bonus!</p><form id="registerForm"><input type="email" id="signupEmail" name="email" placeholder="Email" required><input type="password" id="signupPassword" name="password" placeholder="Password" required><button type="submit">Create Account</button></form><p id="message"></p><br><p>Already have an account? <a href="/login.html">Login</a></p></div></div>
+<script>
     document.getElementById('registerForm').addEventListener('submit', async e => {
         e.preventDefault();
+        const msgEl = document.getElementById('message');
         msgEl.textContent = 'Processing...';
-
-        // --- NEW ROBUST CODE ---
         const email = document.getElementById('signupEmail').value;
         const password = document.getElementById('signupPassword').value;
-
-        const res = await fetch(`${API_BASE}/register`, { 
-            method: 'POST', 
-            headers: {'Content-Type': 'application/json'}, 
-            body: JSON.stringify({ email, password }) // Use the variables directly
-        });
-        // --- END OF NEW CODE ---
-
+        const res = await fetch('/api/auth/register', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ email, password }) });
         const data = await res.json();
         msgEl.textContent = data.message;
         msgEl.style.color = res.ok ? 'lime' : 'red';
-        if (res.ok) {
-            setTimeout(() => { window.location.href = '/login.html'; }, 2000);
-        }
+        if (res.ok) { setTimeout(() => { window.location.href = '/login.html'; }, 2000); }
     });
-    </script>
-</body>
-</html>
+</script></body></html>
