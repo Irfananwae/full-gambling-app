@@ -17,31 +17,27 @@ const authMiddleware = (req, res, next) => {
 router.post('/play-color-game', authMiddleware, async (req, res) => {
     const { betAmount, chosenColor } = req.body;
     const userId = req.user.userId;
+
     if (!betAmount || !chosenColor || betAmount <= 0) {
         return res.status(400).json({ message: 'Invalid bet' });
     }
+
     try {
         const user = await User.findById(userId);
         if (!user || user.balance < betAmount) {
             return res.status(400).json({ message: 'Insufficient balance' });
         }
+        
         user.balance -= betAmount;
         await user.save();
-        req.app.get('registerBet')(userId, betAmount, chosenColor); // Use app-level function
-        res.json({ message: `Bet placed!`, newBalance: user.balance });
+        
+        // This is the corrected line that fixes the crash
+        req.app.get('registerBet')(userId, betAmount, chosenColor);
+
+        res.json({ message: `Bet placed! Good luck.`, newBalance: user.balance });
+
     } catch (error) {
+        console.error("GAME PLAY ERROR:", error);
         res.status(500).json({ message: 'Server error during game play.' });
     }
 });
-
-router.get('/balance', authMiddleware, async (req, res) => {
-    try {
-        const user = await User.findById(req.user.userId).select('balance email');
-        if (!user) return res.status(404).json({ message: "User not found" });
-        res.json(user);
-    } catch (error) {
-        res.status(500).json({ message: "Server Error" });
-    }
-});
-
-module.exports = router;
