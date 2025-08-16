@@ -150,3 +150,155 @@ button.deposit-btn:hover {
     transform: translateY(-5px);
     text-shadow: 0 0 10px rgba(102, 252, 241, 0.7);
 }
+/* --- NEON GRID - ADVANCED GAME UI --- */
+
+.game-container {
+    padding: 20px 15px 90px 15px; /* Top, sides, bottom */
+}
+
+.game-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    margin-bottom: 20px;
+}
+
+.game-header h1 {
+    font-size: 1.5em;
+    margin: 0;
+}
+
+.balance-box {
+    background: rgba(20, 20, 35, 0.7);
+    border: 1px solid rgba(102, 252, 241, 0.2);
+    border-radius: 10px;
+    padding: 5px 15px;
+    text-align: right;
+}
+
+.balance-box p {
+    margin: 0;
+    font-size: 0.8em;
+    color: #a0a0a0;
+}
+.balance-box #balance {
+    font-size: 1.4em;
+    font-weight: 700;
+    color: #66fcf1;
+}
+
+/* --- Countdown Timer Bar --- */
+.timer-card {
+    background: rgba(20, 20, 35, 0.7);
+    border: 1px solid rgba(102, 252, 241, 0.2);
+    border-radius: 15px;
+    padding: 20px;
+    margin-bottom: 20px;
+    text-align: center;
+}
+.timer-card h3 {
+    margin: 0 0 15px 0;
+    color: #fff;
+    font-weight: 600;
+}
+#countdown-bar-container {
+    width: 100%;
+    height: 10px;
+    background-color: #1f2833;
+    border-radius: 5px;
+    overflow: hidden;
+}
+#countdown-bar {
+    height: 100%;
+    width: 100%;
+    background: linear-gradient(90deg, #66fcf1, #45a29e);
+    border-radius: 5px;
+    transition: width 1s linear; /* Smooth countdown animation */
+}
+
+/* --- Result Display --- */
+#result-display {
+    min-height: 80px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 2em;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+@keyframes result-pop {
+    0% { transform: scale(0.5); opacity: 0; }
+    80% { transform: scale(1.1); opacity: 1; }
+    100% { transform: scale(1); opacity: 1; }
+}
+.result-text {
+    animation: result-pop 0.5s ease-out;
+    padding: 10px 20px;
+    border-radius: 10px;
+}
+
+/* --- Bet Controls --- */
+.bet-controls {
+    background: rgba(20, 20, 35, 0.7);
+    border: 1px solid rgba(102, 252, 241, 0.2);
+    border-radius: 15px;
+    padding: 20px;
+    margin-bottom: 20px;
+}
+#betAmount {
+    width: 100%;
+    text-align: center;
+    font-size: 1.2em;
+    margin-bottom: 15px;
+    padding: 12px;
+}
+
+.color-buttons {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 15px;
+}
+.color-btn {
+    padding: 25px 10px;
+    font-size: 1.2em;
+    font-weight: 700;
+    border-radius: 10px;
+    border: 2px solid transparent;
+    transition: all 0.3s ease;
+}
+.color-btn:not(:disabled):hover {
+    border: 2px solid #fff;
+    transform: scale(1.05);
+}
+
+/* Specific button colors */
+.color-btn.red { background: #d92e5a; box-shadow: 0 0 15px rgba(217, 46, 90, 0.5); }
+.color-btn.green { background: #22a66a; box-shadow: 0 0 15px rgba(34, 166, 106, 0.5); }
+.color-btn.blue { background: #2974d9; box-shadow: 0 0 15px rgba(41, 116, 217, 0.5); }
+
+/* --- Live Bets Feed --- */
+.live-bets-feed {
+    text-align: left;
+    max-height: 150px;
+    overflow-y: auto;
+    padding-right: 10px; /* For scrollbar */
+}
+.live-bets-feed h3 {
+    margin-bottom: 10px;
+    color: #fff;
+}
+.bet-item {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 8px;
+    font-size: 0.9em;
+    animation: fadeIn 0.5s;
+}
+.bet-item .player-name {
+    color: #a0a0a0;
+}
+.bet-item .bet-amount {
+    font-weight: 600;
+}
