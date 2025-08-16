@@ -4,49 +4,61 @@ const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 
 const router = express.Router();
-const JWT_SECRET = process.env.JWT_SECRET || "default_fallback_secret";
+const JWT_SECRET = process.env.JWT_SECRET || "default_super_secret_key";
 
-// --- REGISTER ROUTE (WITH BREADCRUMBS) ---
+// --- REGISTER ROUTE ---
 router.post('/register', async (req, res) => {
-    console.log("--- [REGISTER] NEW REQUEST RECEIVED ---");
     const { email, password } = req.body;
-
     if (!email || !password) {
-        return res.status(400).json({ message: "Please provide all fields." });
+        return res.status(400).json({ message: "Email and password are required." });
     }
-  
-    try {
-        console.log("[REGISTER] BREADCRUMB 1: About to search for existing user...");
-        const existingUser = await User.findOne({ email });
-        console.log("[REGISTER] BREADCRUMB 2: Finished searching for existing user.");
 
+    try {
+        const existingUser = await User.findOne({ email });
         if (existingUser) {
-            console.log("[REGISTER] RESULT: User already exists.");
             return res.status(400).json({ message: "Email is already registered." });
         }
+
+        const hashedPassword = await bcrypt.hash(password, 12);
         
-        console.log("[REGISTER] BREADCRUMB 3: User is new. About to hash password...");
-        const salt = await bcrypt.genSalt(10);
-        const hashedPassword = await bcrypt.hash(password, salt);
-        console.log("[REGISTER] BREADCRUMB 4: Finished hashing password.");
-
-        console.log("[REGISTER] BREADCRUMB 5: About to save new user to database...");
         const user = new User({ email, password: hashedPassword });
-        await user.save();
-        console.log("[REGISTER] BREADCRUMB 6: Finished saving new user.");
+        await user.save(); // This is the critical step
 
-        console.log("[REGISTER] SUCCESS: User created successfully!");
-        res.status(201).json({ message: "User registered successfully!" });
+        res.status(201).json({ message: "User registered successfully! Please log in." });
 
     } catch (error) {
         console.error("--- [REGISTER] CRITICAL ERROR ---", error);
-        res.status(500).json({ message: "Server error occurred during registration." });
+        res.status(500).json({ message: "A server error occurred during registration." });
     }
 });
 
-// --- LOGIN ROUTE (Stays the same with its own diagnostics) ---
+// --- LOGIN ROUTE ---
 router.post('/login', async (req, res) => {
-    // ... your login diagnostic code ...
+    const { email, password } = req.body;
+    if (!email || !password) {
+        return res.status(400).json({ message: "Email and password are required." });
+    }
+
+    try {
+        const user = await User.findOne({ email });
+        if (!user) {
+            return res.status(400).json({ message: "Invalid credentials." });
+        }
+
+        const isMatch = await bcrypt.compare(password, user.password);
+        if (!isMatch) {
+            return res.status(400).json({ message: "Invalid credentials." });
+        }
+        
+        const payload = { userId: user.id, email: user.email };
+        const token = jwt.sign(payload, JWT_SECRET, { expiresIn: '1d' });
+        
+        res.json({ token, message: "Logged in successfully!" });
+
+    } catch (error) {
+        console.error("--- [LOGIN] CRITICAL ERROR ---", error);
+        res.status(500).json({ message: "A server error occurred during login." });
+    }
 });
 
 module.exports = router;
