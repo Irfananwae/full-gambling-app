@@ -13,13 +13,16 @@ const authMiddleware = (req, res, next) => {
         next();
     } catch (e) { res.status(400).json({ message: 'Token is not valid' }); }
 };
-
 router.post('/play-color-game', authMiddleware, async (req, res) => {
     const { betAmount, chosenColor } = req.body;
     const userId = req.user.userId;
-    if (!betAmount || !chosenColor || betAmount <= 0) {
-        return res.status(400).json({ message: 'Invalid bet' });
+
+    // --- NEW VALIDATION RULES ---
+    if (!betAmount || !chosenColor || betAmount < 10) { // Minimum bet is 10
+        return res.status(400).json({ message: 'Invalid bet. Minimum is ₹10.' });
     }
+    // --- END NEW VALIDATION ---
+
     try {
         const user = await User.findById(userId);
         if (!user || user.balance < betAmount) {
@@ -28,15 +31,15 @@ router.post('/play-color-game', authMiddleware, async (req, res) => {
         user.balance -= betAmount;
         await user.save();
         
-        // This is the corrected way to call the function
         req.app.get('registerBet')(userId, betAmount, chosenColor);
-
-        res.json({ message: `Bet placed! Good luck.`, newBalance: user.balance });
+        res.json({ message: `Bet on ${chosenColor} placed!`, newBalance: user.balance });
     } catch (error) {
-        console.error("GAME PLAY ERROR:", error);
         res.status(500).json({ message: 'Server error during game play.' });
     }
 });
+
+
+
 
 router.get('/balance', authMiddleware, async (req, res) => {
     try {
