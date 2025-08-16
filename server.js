@@ -79,14 +79,27 @@ setInterval(() => {
         }
     } else if (aviatorState.phase === 'crashed' || aviatorState.phase === 'waiting') {
         aviatorState.phase = 'pending';
+        
+        // --- ADVANCED CRASH LOGIC ---
+        const totalBets = Object.keys(aviatorBets).reduce((sum, userId) => sum + Object.keys(aviatorBets[userId]).length, 0);
+        let crashPoint;
+        if (totalBets > 100) {
+            // High pressure: crash point is very low
+            crashPoint = parseFloat((Math.random() * 0.5 + 1.01).toFixed(2)); // Crashes between 1.01x and 1.51x
+        } else {
+            // Normal pressure
+            crashPoint = Math.random() < 0.1 ? 1.00 : parseFloat((Math.random() * 10 + 1.1).toFixed(2));
+        }
+        // --- END ADVANCED CRASH LOGIC ---
+
         aviatorBets = {};
-        aviatorState.crashPoint = Math.random() < 0.1 ? 1.00 : parseFloat((Math.random() * 10 + 1.1).toFixed(2));
-        aviatorState.startTime = Date.now() + 8000; // 8 second waiting period
+        aviatorState.crashPoint = crashPoint;
+        aviatorState.startTime = Date.now() + 8000;
         io.emit('aviatorState', { phase: 'waiting', startTime: aviatorState.startTime, history: aviatorState.history });
         
         setTimeout(() => {
             aviatorState.phase = 'playing';
-            aviatorState.startTime = Date.now(); // Reset start time for accurate multiplier
+            aviatorState.startTime = Date.now();
         }, 8000);
     }
 }, 100);
