@@ -1,10 +1,10 @@
 const express = require('express');
 const router = express.Router();
 const User = require('../models/User');
-const Withdrawal = require('../models/Withdrawal');
+const Withdrawal = require('../models/Withdrawal'); // Needs the Withdrawal model
 const jwt = require('jsonwebtoken');
 
-const JWT_SECRET = process.env.JWT_SECRET || "default_fallback_secret";
+const JWT_SECRET = process.env.JWT_SECRET || "default_super_secret_key";
 
 // Middleware to get the user from the token
 const auth = (req, res, next) => {
@@ -40,6 +40,7 @@ router.post('/request-withdrawal', auth, async (req, res) => {
 
         res.status(201).json({ message: 'Withdrawal request submitted successfully!', newBalance: user.balance });
     } catch (err) {
+        console.error("--- WITHDRAWAL REQUEST ERROR ---", err);
         res.status(500).json({ message: 'Server error during withdrawal request.' });
     }
 });
