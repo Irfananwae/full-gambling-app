@@ -88,3 +88,106 @@ a {
 .deposit-btn {
     background: linear-gradient(45deg, #f9a825, #fdd835);
 }
+/* --- LOBBY ADVANCED STYLES --- */
+
+.profile-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: rgba(11, 12, 16, 0.8);
+    padding: 15px 20px;
+    border-radius: 10px;
+    margin-bottom: 30px;
+    border: 1px solid rgba(102, 252, 241, 0.2);
+}
+
+.profile-header .welcome-text {
+    text-align: left;
+}
+
+.profile-header p {
+    margin: 0;
+    font-size: 0.9em;
+    color: #c5c6c7;
+}
+
+.profile-header h3 {
+    margin: 0;
+    font-size: 1.1em;
+    color: #fff;
+}
+
+.balance-container {
+    text-align: right;
+}
+
+.balance-container h2 {
+    margin: 0;
+    font-size: 1.8em;
+    color: #66fcf1;
+    background: linear-gradient(45deg, #66fcf1, #45a29e);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.section-title {
+    text-align: left;
+    margin-bottom: 15px;
+    color: #fff;
+}
+
+.game-list {
+    display: grid;
+    grid-template-columns: 1fr; /* Single column on mobile */
+    gap: 20px;
+    margin-bottom: 30px;
+}
+
+.game-card {
+    background: #1f2833;
+    border-radius: 15px;
+    overflow: hidden;
+    text-decoration: none;
+    color: #c5c6c7;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+    animation: fadeIn 0.5s ease-out; /* Re-use existing animation */
+}
+
+.game-card.disabled {
+    opacity: 0.5;
+    pointer-events: none;
+}
+
+.game-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 12px 30px rgba(102, 252, 241, 0.3);
+}
+
+.game-card img {
+    width: 100%;
+    height: 120px; /* Control image height */
+    object-fit: cover;
+    display: block;
+}
+
+.game-card .game-info {
+    padding: 15px;
+    text-align: left;
+}
+
+.game-card h3 {
+    margin: 0 0 5px 0;
+    color: #66fcf1;
+}
+
+.game-card p {
+    margin: 0;
+    font-size: 0.9em;
+}
+
+.action-buttons {
+    display: flex;
+    justify-content: space-around;
+    gap: 10px;
+    }
