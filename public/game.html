@@ -1,103 +1,27 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
-    <link rel="stylesheet" href="style.css">
-    <title>Color Prediction Arena</title>
-</head>
-<body>
-    <div class="game-container">
-        <div class="game-header">
-            <h1>Color Arena</h1>
-            <div class="balance-box">
-                <p>Balance</p>
-                <span id="balance">₹--.--</span>
-            </div>
+<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"><link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet"><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css"><link rel="stylesheet" href="style.css"><title>Color Arena</title></head><body>
+<div id="flash-overlay"></div><div class="page-container game-page">
+    <div class="game-header"><a href="/lobby.html" class="back-btn"><i class="fas fa-arrow-left"></i></a><h1>Color Arena</h1><div class="balance-box"><span id="balance">₹--.--</span></div></div>
+    <div class="timer-card"><h3 id="phase-text">Connecting...</h3><div id="countdown-bar-container"><div id="countdown-bar"></div></div></div>
+    <div id="result-display"></div>
+    <div class="history-bar"><h3>History</h3><div id="history-dots"></div></div>
+    <div class="bet-controls">
+        <div class="bet-pads">
+            <div class="bet-pad red" onclick="placeBet('red')"><span>RED</span></div>
+            <div class="bet-pad green" onclick="placeBet('green')"><span>GREEN</span></div>
+            <div class="bet-pad blue" onclick="placeBet('blue')"><span>BLUE</span></div>
         </div>
-        <div class="timer-card">
-            <h3 id="phase-text">Connecting to Arena...</h3>
-            <div id="countdown-bar-container">
-                <div id="countdown-bar"></div>
-            </div>
+        <div class="amount-controls">
+            <input type="number" id="betAmount" placeholder="Bet Amount" min="1">
+            <button id="quick-bet-10" onclick="setBet(10)">10</button>
+            <button id="quick-bet-100" onclick="setBet(100)">100</button>
+            <button id="quick-bet-1000" onclick="setBet(1000)">1k</button>
         </div>
-        <div id="result-display"></div>
-        <div class="bet-controls">
-            <input type="number" id="betAmount" placeholder="Enter Bet Amount" min="1">
-            <div class="color-buttons">
-                <button class="color-btn red" onclick="placeBet('red')">RED</button>
-                <button class="color-btn green" onclick="placeBet('green')">GREEN</button>
-                <button class="color-btn blue" onclick="placeBet('blue')">BLUE</button>
-            </div>
-            <p id="message" style="min-height: 24px; margin-top: 15px;"></p>
-        </div>
-        <div class="live-bets-feed">
-            <h3>Live Bets</h3>
-            <div id="liveBetsList"></div>
-        </div>
+        <p id="message" class="message-box"></p>
     </div>
-    <nav class="footer-nav">
-        <!-- ... your footer nav html ... -->
-    </nav>
-    <script src="/socket.io/socket.io.js"></script>
-    <script>
-        const token = localStorage.getItem('authToken');
-        if (!token) window.location.href = '/login.html';
-        const socket = io();
-        const balanceEl = document.getElementById('balance');
-        const messageEl = document.getElementById('message');
-        const betInput = document.getElementById('betAmount');
-        const colorButtons = document.querySelectorAll('.color-btn');
-        const phaseEl = document.getElementById('phase-text');
-        const resultDisplayEl = document.getElementById('result-display');
-        const liveBetsListEl = document.getElementById('liveBetsList');
-        const countdownBar = document.getElementById('countdown-bar');
-        let userHasBet = false;
-        let currentRoundId = '';
-        socket.on('gameState', (state) => {
-            if (currentRoundId !== state.roundId && state.phase === 'betting') {
-                userHasBet = false;
-                messageEl.textContent = 'Choose your color';
-            }
-            currentRoundId = state.roundId;
-            const percentage = (state.timer / 15) * 100;
-            countdownBar.style.width = `${percentage}%`;
-            if (state.phase === 'betting') {
-                phaseEl.innerHTML = `Place Bets! <span style="font-size: 0.7em; color: #a0a0a0;">#${currentRoundId.slice(-4)}</span>`;
-                resultDisplayEl.innerHTML = '';
-                setButtonsDisabled(userHasBet);
-                let botsHtml = '';
-                state.bots.forEach(bot => { botsHtml = `<div class="bet-item"><span class="player-name">${bot.name}</span><span class="bet-amount" style="color:${bot.color};">₹${bot.bet}</span></div>` + botsHtml; });
-                liveBetsListEl.innerHTML = botsHtml;
-            } else if (state.phase === 'result') {
-                phaseEl.textContent = 'Round Over! Result:';
-                setButtonsDisabled(true);
-                resultDisplayEl.innerHTML = `<div class="result-text" style="background-color:${state.winningColor}; color: #fff; text-shadow: 0 0 10px #000;">${state.winningColor}</div>`;
-                setTimeout(fetchBalance, 1000);
-            }
-        });
-        function setButtonsDisabled(disabled) { colorButtons.forEach(b => b.disabled = disabled); }
-        async function fetchBalance() { const res = await fetch('/api/game/balance', { headers: { 'x-auth-token': token }}); if (res.ok) { const data = await res.json(); balanceEl.textContent = `₹${data.balance.toFixed(2)}`; } else { window.location.href = '/login.html'; }}
-        async function placeBet(chosenColor) {
-            if (userHasBet) { messageEl.textContent = "You have already bet this round."; return; }
-            const betAmount = Number(betInput.value);
-            if (!betAmount || betAmount <= 0) { messageEl.textContent = "Please enter a valid amount."; return; }
-            setButtonsDisabled(true);
-            messageEl.textContent = `Betting ₹${betAmount} on ${chosenColor}...`;
-            const res = await fetch('/api/game/play-color-game', { method: 'POST', headers: { 'Content-Type': 'application/json', 'x-auth-token': token }, body: JSON.stringify({ betAmount, chosenColor }) });
-            const data = await res.json();
-            if (res.ok) {
-                userHasBet = true;
-                messageEl.textContent = `Your bet is placed! Good luck.`;
-                balanceEl.textContent = `₹${data.newBalance.toFixed(2)}`;
-            } else {
-                messageEl.textContent = data.message;
-                setButtonsDisabled(false);
-            }
-        }
-        document.addEventListener('DOMContentLoaded', fetchBalance);
-    </script>
-</body>
-</html>
+</div>
+<script src="/socket.io/socket.io.js"></script><script src="/js/main.js"></script><script>
+    if(!token)window.location.href='/login.html';const socket=io();const balanceEl=document.getElementById('balance');const msgEl=document.getElementById('message');const betInput=document.getElementById('betAmount');const betPads=document.querySelectorAll('.bet-pad');const phaseEl=document.getElementById('phase-text');const resultEl=document.getElementById('result-display');const historyEl=document.getElementById('history-dots');const countdownBar=document.getElementById('countdown-bar');const flashOverlay=document.getElementById('flash-overlay');let userHasBet=false;let currentRoundId='';socket.on('connect',()=>{socket.emit('authenticate',token);});socket.on('gameState',state=>{const isNewBettingRound=currentRoundId!==state.roundId&&state.phase==='betting';if(isNewBettingRound){userHasBet=false;msgEl.textContent='Place your bet for this round.';betPads.forEach(p=>p.classList.remove('disabled'));}currentRoundId=state.roundId;const percentage=(state.timer/(state.phase==='betting'?15:5))*100;countdownBar.style.width=`${percentage}%`;if(state.phase==='betting'){phaseEl.textContent=`BETTING ENDS IN: ${state.timer}s`;resultEl.innerHTML='';if(!userHasBet){betPads.forEach(p=>p.classList.remove('disabled'));}}else if(state.phase==='result'){phaseEl.textContent=`RESULT IN: ${state.timer}s`;betPads.forEach(p=>p.classList.add('disabled'));if(!resultEl.innerHTML){resultEl.innerHTML=`<div class="result-text">${state.winningColor.toUpperCase()}</div>`;flashColor(state.winningColor);}}let historyHtml='';state.history.forEach(color=>{historyHtml+=`<div class="history-dot ${color}"></div>`;});historyEl.innerHTML=historyHtml;});socket.on('balanceUpdate',data=>{balanceEl.textContent=`₹${data.newBalance.toFixed(2)}`;balanceEl.classList.add('highlight');setTimeout(()=>balanceEl.classList.remove('highlight'),500);});async function fetchBalance(){const r=await fetch('/api/game/balance',{headers:{'x-auth-token':token}});if(r.ok){const d=await r.json();balanceEl.textContent=`₹${d.balance.toFixed(2)}`;}}
+    async function placeBet(color){if(userHasBet){msgEl.textContent='You have already bet this round.';return;}const amount=Number(betInput.value);if(!amount||amount<=0){msgEl.textContent='Please enter a valid bet amount.';return;}betPads.forEach(p=>p.classList.add('disabled'));msgEl.textContent=`Betting ₹${amount} on ${color}...`;const r=await fetch('/api/game/play-color-game',{method:'POST',headers:{'Content-Type':'application/json','x-auth-token':token},body:JSON.stringify({betAmount:amount,chosenColor:color})});const d=await r.json();if(r.ok){userHasBet=true;msgEl.textContent=d.message;balanceEl.textContent=`₹${d.newBalance.toFixed(2)}`;}else{msgEl.textContent=d.message;betPads.forEach(p=>p.classList.remove('disabled'));}}
+    function setBet(amount){betInput.value=amount;}function flashColor(color){flashOverlay.style.backgroundColor=color;flashOverlay.classList.add('active');setTimeout(()=>flashOverlay.classList.remove('active'),500);}
+    document.addEventListener('DOMContentLoaded',fetchBalance);
+</script></body></html>
