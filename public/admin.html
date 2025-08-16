@@ -4,6 +4,27 @@
     <div id="deposits-tab" class="tab-content"><div id="deposit-list" class="info-card"><h2>Loading...</h2></div></div>
     <div id="withdrawals-tab" class="tab-content"><div id="withdrawal-list" class="info-card"><h2>Loading...</h2></div></div>
 </div>
+    <!-- Add a new tab button -->
+<button class="tab-btn" onclick="showTab('controls')">Game Controls</button>
+
+<!-- Add a new tab content div -->
+<div id="controls-tab" class="tab-content">
+    <div class="info-card">
+        <h2>Aviator Controls</h2>
+        <button class="reject" onclick="crashAviator()">FORCE CRASH NOW</button>
+    </div>
+</div>
+
+<!-- Add this JS function to the script tag -->
+<script>
+    function crashAviator() {
+        if (confirm('Are you SURE you want to crash the Aviator game?')) {
+            // You need to include the socket.io client in admin.html for this to work
+            const socket = io();
+            socket.emit('adminCrash', token);
+        }
+    }
+</script>
 <nav class="footer-nav"></nav><script src="/js/main.js"></script>
 <script>
     // This script assumes main.js has already been loaded
