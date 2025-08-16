@@ -14,66 +14,34 @@
             <h1>Request Withdrawal</h1>
             <p>Your current balance: <b id="balance">--.--</b></p>
             <form id="withdrawal-form">
-                <input type="number" id="withdraw-amount" placeholder="Amount to withdraw" required>
-                <input type="text" id="account-holder" placeholder="Account Holder Name" required>
-                <input type="text" id="bank-account" placeholder="Bank Account Number" required>
-                <input type="text" id="ifsc-code" placeholder="IFSC Code" required>
+                <div class="input-group">
+                    <input type="number" id="withdraw-amount" placeholder=" " required>
+                    <label for="withdraw-amount">Amount to withdraw</label>
+                </div>
+                <div class="input-group">
+                    <input type="text" id="account-holder" placeholder=" " required>
+                    <label for="account-holder">Account Holder Name</label>
+                </div>
+                <div class="input-group">
+                    <input type="text" id="bank-account" placeholder=" " required>
+                    <label for="bank-account">Bank Account Number</label>
+                </div>
+                <div class="input-group">
+                    <input type="text" id="ifsc-code" placeholder=" " required>
+                    <label for="ifsc-code">IFSC Code</label>
+                </div>
                 <button type="submit">Submit Request</button>
             </form>
             <p id="message" style="margin-top: 15px;"></p>
         </div>
     </div>
-
-    <!-- The Empty Footer Nav (will be filled by main.js) -->
     <nav class="footer-nav"></nav>
-
-    <!-- Shared JS for navigation -->
     <script src="/js/main.js"></script>
-    
-    <!-- Page-specific JS -->
     <script>
         if (!token) window.location.href = '/login.html';
-
-        async function fetchWithdrawalPageData() {
-            const res = await fetch('/api/game/balance', { headers: { 'x-auth-token': token } });
-            if (res.ok) {
-                const data = await res.json();
-                document.getElementById('balance').textContent = `₹${data.balance.toFixed(2)}`;
-            } else {
-                logout();
-            }
-        }
-        
-        document.getElementById('withdrawal-form').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const msgEl = document.getElementById('message');
-            msgEl.textContent = 'Submitting...';
-            
-            const amount = Number(document.getElementById('withdraw-amount').value);
-            const bankDetails = {
-                accountHolder: document.getElementById('account-holder').value,
-                accountNumber: document.getElementById('bank-account').value,
-                ifscCode: document.getElementById('ifsc-code').value
-            };
-
-            const res = await fetch('/api/transaction/request-withdrawal', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'x-auth-token': token },
-                body: JSON.stringify({ amount, bankDetails })
-            });
-            
-            const data = await res.json();
-            msgEl.textContent = data.message;
-            if (res.ok) {
-                msgEl.style.color = 'lime';
-                document.getElementById('balance').textContent = `₹${data.newBalance.toFixed(2)}`;
-                e.target.reset();
-            } else {
-                msgEl.style.color = 'red';
-            }
-        });
-
-        document.addEventListener('DOMContentLoaded', fetchWithdrawalPageData);
+        async function fetchWithdrawalPageData(){const r=await fetch('/api/game/balance',{headers:{'x-auth-token':token}});if(r.ok){const d=await r.json();document.getElementById('balance').textContent=`₹${d.balance.toFixed(2)}`;}else{logout();}}
+        document.getElementById('withdrawal-form').addEventListener('submit',async e=>{e.preventDefault();const msgEl=document.getElementById('message');msgEl.textContent='Submitting...';const amount=Number(document.getElementById('withdraw-amount').value);const bankDetails={accountHolder:document.getElementById('account-holder').value,accountNumber:document.getElementById('bank-account').value,ifscCode:document.getElementById('ifsc-code').value};const res=await fetch('/api/transaction/request-withdrawal',{method:'POST',headers:{'Content-Type':'application/json','x-auth-token':token},body:JSON.stringify({amount,bankDetails})});const data=await res.json();msgEl.textContent=data.message;if(res.ok){msgEl.style.color='lime';document.getElementById('balance').textContent=`₹${data.newBalance.toFixed(2)}`;e.target.reset();}else{msgEl.style.color='red';}});
+        document.addEventListener('DOMContentLoaded',fetchWithdrawalPageData);
     </script>
 </body>
 </html>
