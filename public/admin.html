@@ -1,0 +1,44 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"><title>Admin Panel</title><link rel="stylesheet" href="style.css"></head><body>
+<div class="page-container"><h1>Admin Panel</h1><div id="user-management-section" class="info-card"><h2>User Management</h2><div id="user-list"></div></div></div>
+<script>
+    const token = localStorage.getItem('authToken');
+    function decodeJwt(t){try{return JSON.parse(atob(t.split('.')[1]));}catch(e){return null;}}
+    async function fetchUsers() {
+        const userListDiv = document.getElementById('user-list');
+        try {
+            const res = await fetch('/api/admin/users', { headers: { 'x-auth-token': token } });
+            if (!res.ok) { document.body.innerHTML = '<h1>Access Denied</h1><p>You do not have permission to view this page.</p>'; return; }
+            const users = await res.json();
+            let html = '<table><tr><th>Email</th><th>Balance</th><th>Actions</th></tr>';
+            users.forEach(user => {
+                html += `<tr><td>${user.email}</td><td>₹${user.balance.toFixed(2)}</td>
+                         <td><input type="number" placeholder="Amount" id="amount-${user._id}" min="1"><button onclick="addBalance('${user._id}')">Add</button></td></tr>`;
+            });
+            html += '</table>';
+            userListDiv.innerHTML = html;
+        } catch (err) { userListDiv.innerHTML = '<p>Error loading users.</p>'; }
+    }
+    async function addBalance(userId) {
+        const amountInput = document.getElementById(`amount-${userId}`);
+        const amount = Number(amountInput.value);
+        if (!amount || amount <= 0) { alert('Please enter a valid amount.'); return; }
+        try {
+            const res = await fetch('/api/admin/add-balance', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'x-auth-token': token },
+                body: JSON.stringify({ userId, amount })
+            });
+            const data = await res.json();
+            alert(data.message);
+            if (res.ok) fetchUsers(); // Refresh the list on success
+        } catch (err) { alert('An error occurred.'); }
+    }
+    document.addEventListener('DOMContentLoaded', () => {
+        const user = decodeJwt(token);
+        if (!token || !user || !user.isAdmin) {
+            document.body.innerHTML = '<h1>Access Denied</h1><p>You must be an admin to view this page.</p><a href="/login.html">Login</a>';
+        } else { fetchUsers(); }
+    });
+</script>
+<style>table{width:100%;border-collapse:collapse;}th,td{padding:8px;border-bottom:1px solid #444;text-align:left;}button{padding:5px 10px;font-size:14px;}</style>
+</body></html>
