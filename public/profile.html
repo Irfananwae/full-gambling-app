@@ -1,0 +1,18 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"><title>Profile</title><link rel="stylesheet" href="style.css"><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css"></head><body>
+<div class="page-container">
+    <div class="profile-header">
+        <div class="welcome-text"><p>Your Profile</p><h3 id="userEmail">...</h3></div>
+        <div class="balance-container"><p>Balance</p><h2 id="balance">₹--.--</h2></div>
+    </div>
+    <div class="action-buttons" style="margin-top: 30px;"><button onclick="logout()">Logout</button></div>
+</div>
+<!-- Footer Navigation Bar -->
+<nav class="footer-nav"><a href="/lobby.html" class="nav-item"><i class="fas fa-gamepad"></i><span>Games</span></a><a href="/deposit.html" class="nav-item"><i class="fas fa-wallet"></i><span>Deposit</span></a><a href="/withdrawal.html" class="nav-item"><i class="fas fa-money-bill-wave"></i><span>Withdraw</span></a><a href="/profile.html" class="nav-item active"><i class="fas fa-user"></i><span>Profile</span></a></nav>
+<script>
+    const token = localStorage.getItem('authToken');
+    if (!token) window.location.href = '/login.html';
+    function decodeJwt(t){try{return JSON.parse(atob(t.split('.')[1]));}catch(e){return null;}}
+    async function fetchBalance(){const r=await fetch('/api/game/balance',{headers:{'x-auth-token':token}});if(r.ok){const d=await r.json();document.getElementById('balance').textContent=`₹${d.balance.toFixed(2)}`;}else{logout();}}
+    function logout(){localStorage.removeItem('authToken');window.location.href='/login.html';}
+    document.addEventListener('DOMContentLoaded',()=>{const d=decodeJwt(token);if(d&&d.email){document.getElementById('userEmail').textContent=d.email;}fetchBalance();});
+</script></body></html>
