@@ -41,7 +41,15 @@ const placeAviatorBet = (userId, betAmount, betPanelId) => {
         return { success: false, message: 'You have already placed a bet on this panel.' };
     }
     aviatorBets[userId][betPanelId] = { betAmount, status: 'playing' };
-    io.emit('aviatorNewBet', { email: connectedUsers[userId]?.email || 'Player', betAmount });
+    
+    // --- THIS IS THE NEW LINE ---
+    // We get the user's email from the connectedUsers map
+    const userEmail = (Object.entries(connectedUsers).find(([id, sockId]) => id === userId) || [])[0];
+    
+    // Now we emit the bet with the email
+    io.emit('aviatorNewBet', { email: userEmail || 'Player', betAmount });
+    // --- END OF NEW LINE ---
+
     return { success: true };
 };
 app.set('placeAviatorBet', placeAviatorBet);
