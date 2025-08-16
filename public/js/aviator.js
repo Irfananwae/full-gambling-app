@@ -9,6 +9,7 @@ const panels = {
     panel1: { id: 'panel1', el: document.getElementById('panel1'), input: document.querySelector('#panel1 .bet-input'), btn: document.querySelector('#panel1 .bet-btn'), state: 'idle', betAmount: 0 },
     panel2: { id: 'panel2', el: document.getElementById('panel2'), input: document.querySelector('#panel2 .bet-input'), btn: document.querySelector('#panel2 .bet-btn'), state: 'idle', betAmount: 0 }
 };
+
 function resizeCanvas() { canvas.width = canvas.clientWidth; canvas.height = canvas.clientHeight; }
 window.addEventListener('resize', resizeCanvas); resizeCanvas();
 
@@ -36,7 +37,7 @@ socket.on('aviatorState', (state) => {
         if (animationFrameId) cancelAnimationFrame(animationFrameId); animationFrameId = null;
         const waitTime = Math.ceil((state.startTime - Date.now()) / 1000);
         multiplierEl.innerHTML = `<div>Starting in ${waitTime > 0 ? waitTime : 0}s</div>`;
-        multiplierEl.className = 'waiting'; planeEl.style.display = 'none'; pathPoints = [];
+        multiplierEl.className = 'waiting'; planeEl.style.display = 'none'; pathPoints = []; myBetsEl.innerHTML = '';
         Object.values(panels).forEach(p => updatePanelUI(p, 'idle')); updateHistory(state.history);
     } else if (state.phase === 'playing') {
         planeEl.style.display = 'block'; multiplierEl.className = 'playing';
@@ -49,7 +50,7 @@ socket.on('aviatorState', (state) => {
         multiplierEl.className = 'crashed';
         multiplierEl.innerHTML = `<span class="flew-away-text">FLEW AWAY!</span>${state.multiplier.toFixed(2)}x`;
         planeEl.style.display = 'none';
-        Object.values(panels).forEach(p => { if (p.state === 'in_game') updatePanelUI(p, 'idle'); });
+        Object.values(panels).forEach(p => { if (p.state === 'in_game') { updatePanelUI(p, 'idle'); addMyBet(p.betAmount, state.multiplier, false); } });
     }
 });
 
@@ -75,7 +76,7 @@ Object.values(panels).forEach(panel => {
             const amount = Number(input.value); if (!amount || amount < 10) return;
             fetch('/api/aviator/place-bet', { method: 'POST', headers: { 'Content-Type': 'application/json', 'x-auth-token': token }, body: JSON.stringify({ betAmount: amount, betPanelId: panel.id }) }).then(r => r.json()).then(d => { if (d.newBalance !== undefined) { balanceEl.textContent = `₹${d.newBalance.toFixed(2)}`; panel.betAmount = amount; updatePanelUI(panel, 'waiting_for_round'); } else { alert(d.message); } });
         } else if (panel.state === 'in_game') {
-            fetch('/api/aviator/cash-out', { method: 'POST', headers: { 'Content-Type': 'application/json', 'x-auth-token': token }, body: JSON.stringify({ betPanelId: panel.id }) }).then(r => r.json()).then(d => { if (d.newBalance !== undefined) { balanceEl.textContent = `₹${d.newBalance.toFixed(2)}`; updatePanelUI(panel, 'cashed_out', d.multiplier); } else { alert(d.message); } });
+            fetch('/api/aviator/cash-out', { method: 'POST', headers: { 'Content-Type': 'application/json', 'x-auth-token': token }, body: JSON.stringify({ betPanelId: panel.id }) }).then(r => r.json()).then(d => { if (d.newBalance !== undefined) { balanceEl.textContent = `₹${d.newBalance.toFixed(2)}`; updatePanelUI(panel, 'cashed_out', d.multiplier); addMyBet(panel.betAmount, d.multiplier, true); } else { alert(d.message); } });
         }
     };
     input.oninput = () => { if (panel.state === 'idle') betBtn.textContent = `BET (₹${input.value})`; };
@@ -84,6 +85,7 @@ Object.values(panels).forEach(panel => {
     panel.el.querySelectorAll('.quick-bet-btn').forEach(b => b.onclick = () => { input.value = b.textContent; input.oninput(); });
 });
 
+function addMyBet(amount, multiplier, won) { const betDiv = document.createElement('div'); betDiv.className = 'live-bet-item'; betDiv.innerHTML = `<span>₹${amount.toFixed(2)}</span><span style="color:${won ? '#4caf50' : '#ff5555'}">${multiplier.toFixed(2)}x</span>`; myBetsEl.prepend(betDiv); }
 function updateHistory(history) { if(!history) return; historyEl.innerHTML = ''; history.slice(0, 15).forEach(m => { const item = document.createElement('div'); let colorClass = 'red'; if (m >= 2) colorClass = 'green'; else if (m >= 1.1) colorClass = 'orange'; item.className = `history-item ${colorClass}`; item.textContent = `${m.toFixed(2)}x`; historyEl.appendChild(item); }); }
 socket.on('balanceUpdate', data => balanceEl.textContent = `₹${data.newBalance.toFixed(2)}`);
 document.addEventListener('DOMContentLoaded', () => fetch('/api/game/balance', { headers: { 'x-auth-token': token }}).then(r=>r.json()).then(d=>balanceEl.textContent=`₹${d.balance.toFixed(2)}`));
