@@ -1,17 +1,35 @@
+/* --- GLOBAL RESET FOR FULL SCREEN --- */
+* {
+    box-sizing: border-box; /* Makes padding and borders behave predictably */
+}
+
+html, body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    overflow-x: hidden; /* Prevents horizontal scrollbars */
+}
+/* --- END GLOBAL RESET --- */
 html, body {
     margin: 0;
     padding: 0;
     width: 100%;
     overflow-x: hidden; /* Prevents accidental horizontal scrolling */
 }
-
-/* Modify the main container to be full-width */
+/* Corrected Main Container Style for Full Screen */
 .form-card, .game-container, .lobby-container, .page-container {
-    max-width: 100%;
-    border-radius: 0;
-    min-height: calc(100vh - 60px); /* Full height minus the footer nav */
-    box-sizing: border-box; /* Important for padding */
-    padding-bottom: 80px; /* Space for the footer nav */
+    background: transparent; /* Use the body's gradient instead */
+    width: 100%; /* Ensure it tries to fill the screen */
+    min-height: calc(100vh - 60px); /* Full height minus footer nav */
+    padding: 20px; /* Add padding inside for content */
+    padding-bottom: 80px; /* Extra padding at the bottom for the nav bar */
+    margin: 0; /* Remove any margin */
+    box-shadow: none; /* Remove shadows that might look weird on edges */
+    border: none; /* Remove borders */
+    backdrop-filter: none; /* Remove blur effect for a cleaner look */
+    border-radius: 0; /* REMOVE rounded corners for edge-to-edge feel */
+}
+
 }
 @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap');
 
