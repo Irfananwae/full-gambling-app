@@ -106,7 +106,6 @@ async function startServer() {
         app.use('/api/auth', require('./routes/auth'));
         app.use('/api/game', require('./routes/game'));
         app.use('/api/transaction', require('./routes/transaction'));
-        // ... after app.use('/api/game', ...);
 app.use('/api/admin', require('./routes/admin'));
         io.on('connection', (socket) => { console.log('A user connected via WebSocket:', socket.id); });
         server.listen(PORT, () => { console.log(`🚀 Server is live on port ${PORT}`); });
