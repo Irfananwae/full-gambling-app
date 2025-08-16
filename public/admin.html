@@ -1,68 +1,19 @@
 <!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"><link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet"><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css"><link rel="stylesheet" href="style.css"><title>Admin Panel</title></head><body>
-<div class="page-container"><h1>Admin Panel</h1><div class="admin-tabs"><button class="tab-btn active" onclick="showTab('users')">User Management</button><button class="tab-btn" onclick="showTab('withdrawals')">Withdrawals</button></div>
-    <div id="users-tab" class="tab-content active"><div id="user-list" class="info-card"><h2>Loading users...</h2></div></div>
-    <div id="withdrawals-tab" class="tab-content"><div id="withdrawal-list" class="info-card"><h2>Loading withdrawal requests...</h2></div></div>
+<div class="page-container"><h1>Admin Panel</h1><div class="admin-tabs"><button class="tab-btn active" onclick="showTab('users')">Users</button><button class="tab-btn" onclick="showTab('deposits')">Deposits</button><button class="tab-btn" onclick="showTab('withdrawals')">Withdrawals</button></div>
+    <div id="users-tab" class="tab-content active"><div id="user-list" class="info-card"><h2>Loading...</h2></div></div>
+    <div id="deposits-tab" class="tab-content"><div id="deposit-list" class="info-card"><h2>Loading...</h2></div></div>
+    <div id="withdrawals-tab" class="tab-content"><div id="withdrawal-list" class="info-card"><h2>Loading...</h2></div></div>
 </div>
-<script src="/js/main.js"></script><script>
-    document.addEventListener('DOMContentLoaded', () => {
-        const user = decodeJwt(token);
-        if (!token || !user || !user.isAdmin) {
-            document.body.innerHTML = '<h1>Access Denied</h1>';
-        } else {
-            fetchUsers();
-            fetchWithdrawals();
-        }
-    });
-    // ... (rest of the script is below) ...
-</script><script>
-    const token = localStorage.getItem('authToken'); // Already defined in main.js but needed here for immediate use
-
-    function showTab(tabName) {
-        document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
-        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-        document.getElementById(`${tabName}-tab`).classList.add('active');
-        document.querySelector(`button[onclick="showTab('${tabName}')"]`).classList.add('active');
-    }
-
-    async function fetchUsers() {
-        const userListDiv = document.getElementById('user-list');
-        try {
-            const res = await fetch('/api/admin/users', { headers: { 'x-auth-token': token } });
-            if (!res.ok) { throw new Error('Failed to fetch users'); }
-            const users = await res.json();
-            if(users.length === 0){ userListDiv.innerHTML = '<h2>No users found.</h2>'; return; }
-            let html = '<h2>User Management</h2><table><tr><th>Email</th><th>Balance</th><th>Actions</th></tr>';
-            users.forEach(user => {
-                html += `<tr><td>${user.email}</td><td>₹${user.balance.toFixed(2)}</td>
-                         <td><input type="number" placeholder="Amt" id="amount-${user._id}" min="1"><button onclick="addBalance('${user._id}')">Add</button></td></tr>`;
-            });
-            userListDiv.innerHTML = html + '</table>';
-        } catch (err) { userListDiv.innerHTML = '<h2>Error loading users.</h2>'; }
-    }
-    // ... addBalance function is the same ...
-    async function addBalance(userId) { /* ... same as before ... */ }
-
-    async function fetchWithdrawals() {
-        const listDiv = document.getElementById('withdrawal-list');
-        try {
-            const res = await fetch('/api/admin/withdrawals', { headers: { 'x-auth-token': token } });
-            const withdrawals = await res.json();
-            if(withdrawals.length === 0){ listDiv.innerHTML = '<h2>No pending withdrawals.</h2>'; return; }
-            let html = '<h2>Withdrawal Requests</h2><table><tr><th>User</th><th>Amount</th><th>Details</th><th>Actions</th></tr>';
-            withdrawals.forEach(w => {
-                html += `<tr><td>${w.userId.email}</td><td>₹${w.amount}</td><td>${w.bankDetails.accountHolder}<br>${w.bankDetails.accountNumber}<br>${w.bankDetails.ifscCode}</td>
-                         <td><button onclick="approveWithdrawal('${w._id}')">Approve</button><button onclick="rejectWithdrawal('${w._id}')">Reject</button></td></tr>`;
-            });
-            listDiv.innerHTML = html + '</table>';
-        } catch (err) { listDiv.innerHTML = '<h2>Error loading withdrawals.</h2>'; }
-    }
-    // ... functions to approve/reject ...
-    async function approveWithdrawal(id) { /* POST to /api/admin/approve-withdrawal */ }
-    async function rejectWithdrawal(id) { /* POST to /api/admin/reject-withdrawal */ }
-
-    document.addEventListener('DOMContentLoaded', () => {
-        const user = decodeJwt(token);
-        if (!token || !user || !user.isAdmin) { document.body.innerHTML = '<h1>Access Denied</h1>'; } 
-        else { showTab('users'); fetchUsers(); fetchWithdrawals(); }
-    });
-        </script></body></html>
+<nav class="footer-nav"></nav><script src="/js/main.js"></script><script>
+    if(!token||!decodeJwt(token)?.isAdmin)document.body.innerHTML='<h1>Access Denied</h1>';
+    function showTab(tabName){document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active'));document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));document.getElementById(`${tabName}-tab`).classList.add('active');document.querySelector(`button[onclick="showTab('${tabName}')"]`).classList.add('active');}
+    async function handleAdminAction(url,body){if(!confirm('Are you sure?'))return;try{const r=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json','x-auth-token':token},body:JSON.stringify(body)});const d=await r.json();alert(d.message);if(r.ok)fetchAllData();}catch(e){alert('An error occurred.');}}
+    async function addBalance(userId){const amount=Number(document.getElementById(`amount-${userId}`).value);if(!amount||amount<=0){alert('Invalid amount');return;}handleAdminAction('/api/admin/add-balance',{userId,amount});}
+    async function approveDeposit(depositId){handleAdminAction('/api/admin/approve-deposit',{depositId});}
+    async function rejectDeposit(depositId){handleAdminAction('/api/admin/reject-deposit',{depositId});}
+    async function approveWithdrawal(withdrawalId){handleAdminAction('/api/admin/approve-withdrawal',{withdrawalId});}
+    async function rejectWithdrawal(withdrawalId){handleAdminAction('/api/admin/reject-withdrawal',{withdrawalId});}
+    async function fetchAllData(){/* Fetch and render all 3 lists */}
+    document.addEventListener('DOMContentLoaded',fetchAllData);
+</script></body>
+</html>
