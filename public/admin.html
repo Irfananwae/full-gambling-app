@@ -4,16 +4,95 @@
     <div id="deposits-tab" class="tab-content"><div id="deposit-list" class="info-card"><h2>Loading...</h2></div></div>
     <div id="withdrawals-tab" class="tab-content"><div id="withdrawal-list" class="info-card"><h2>Loading...</h2></div></div>
 </div>
-<nav class="footer-nav"></nav><script src="/js/main.js"></script><script>
-    if(!token||!decodeJwt(token)?.isAdmin)document.body.innerHTML='<h1>Access Denied</h1>';
-    function showTab(tabName){document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active'));document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));document.getElementById(`${tabName}-tab`).classList.add('active');document.querySelector(`button[onclick="showTab('${tabName}')"]`).classList.add('active');}
-    async function handleAdminAction(url,body){if(!confirm('Are you sure?'))return;try{const r=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json','x-auth-token':token},body:JSON.stringify(body)});const d=await r.json();alert(d.message);if(r.ok)fetchAllData();}catch(e){alert('An error occurred.');}}
-    async function addBalance(userId){const amount=Number(document.getElementById(`amount-${userId}`).value);if(!amount||amount<=0){alert('Invalid amount');return;}handleAdminAction('/api/admin/add-balance',{userId,amount});}
-    async function approveDeposit(depositId){handleAdminAction('/api/admin/approve-deposit',{depositId});}
-    async function rejectDeposit(depositId){handleAdminAction('/api/admin/reject-deposit',{depositId});}
-    async function approveWithdrawal(withdrawalId){handleAdminAction('/api/admin/approve-withdrawal',{withdrawalId});}
-    async function rejectWithdrawal(withdrawalId){handleAdminAction('/api/admin/reject-withdrawal',{withdrawalId});}
-    async function fetchAllData(){/* Fetch and render all 3 lists */}
-    document.addEventListener('DOMContentLoaded',fetchAllData);
-</script></body>
+<nav class="footer-nav"></nav><script>
+    // This script assumes main.js has already been loaded and defined 'token' and 'decodeJwt'
+    if (!token || !decodeJwt(token)?.isAdmin) {
+        document.body.innerHTML = '<h1><i class="fas fa-exclamation-triangle"></i> Access Denied</h1>';
+    }
+
+    const userListDiv = document.getElementById('user-list');
+    const depositListDiv = document.getElementById('deposit-list');
+    const withdrawalListDiv = document.getElementById('withdrawal-list');
+
+    function showTab(tabName) {
+        document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.getElementById(`${tabName}-tab`).classList.add('active');
+        document.querySelector(`button[onclick="showTab('${tabName}')"]`).classList.add('active');
+    }
+
+    async function handleAdminAction(url, body) {
+        if (!confirm('Are you sure you want to perform this action?')) return;
+        try {
+            const res = await fetch(url, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'x-auth-token': token },
+                body: JSON.stringify(body)
+            });
+            const data = await res.json();
+            alert(data.message); // Simple alert for confirmation
+            if (res.ok) fetchAllData(); // Refresh all data on success
+        } catch (err) {
+            alert('A network error occurred.');
+        }
+    }
+
+    // These functions now correctly call the shared handler
+    function addBalance(userId) { const amount = Number(document.getElementById(`amount-${userId}`).value); if(!amount || amount <= 0) { alert('Invalid amount'); return; } handleAdminAction('/api/admin/add-balance', { userId, amount }); }
+    function approveDeposit(depositId) { handleAdminAction('/api/admin/approve-deposit', { depositId }); }
+    function rejectDeposit(depositId) { handleAdminAction('/api/admin/reject-deposit', { depositId }); }
+    function approveWithdrawal(withdrawalId) { handleAdminAction('/api/admin/approve-withdrawal', { withdrawalId }); }
+    function rejectWithdrawal(withdrawalId) { handleAdminAction('/api/admin/reject-withdrawal', { withdrawalId }); }
+
+    // --- Data Fetching and Rendering ---
+    
+    async function fetchUsers() {
+        try {
+            const res = await fetch('/api/admin/users', { headers: { 'x-auth-token': token } });
+            const users = await res.json();
+            if(users.length === 0) { userListDiv.innerHTML = '<h2><i class="fas fa-satellite-dish"></i> No users found in the system.</h2>'; return; }
+            let html = '<h2><i class="fas fa-users"></i> System Users</h2><table>';
+            users.forEach(user => {
+                // AI Avatar Generation using a hash of the user's ID
+                const avatarUrl = `https://robohash.org/${user._id}?set=set4&bgset=bg1`;
+                html += `<tr>
+                    <td><img src="${avatarUrl}" class="avatar"> ${user.email}</td>
+                    <td>₹${user.balance.toFixed(2)}</td>
+                    <td><div class="action-group"><input type="number" placeholder="Amt" id="amount-${user._id}"><button onclick="addBalance('${user._id}')">Add</button></div></td>
+                </tr>`;
+            });
+            userListDiv.innerHTML = html + '</table>';
+        } catch (err) { userListDiv.innerHTML = '<h2><i class="fas fa-exclamation-circle"></i> Error loading users.</h2>'; }
+    }
+
+    async function fetchDeposits() {
+        try {
+            const res = await fetch('/api/admin/deposits', { headers: { 'x-auth-token': token } });
+            const deposits = await res.json();
+            if(deposits.length === 0) { depositListDiv.innerHTML = '<h2><i class="fas fa-inbox"></i> No pending deposit requests.</h2>'; return; }
+            let html = '<h2><i class="fas fa-download"></i> Pending Deposits</h2><table>';
+            deposits.forEach(d => {
+                html += `<tr>
+                    <td>${d.userId.email}<br><small>TID: ${d.transactionId}</small></td>
+                    <td>₹${d.amount}</td>
+                    <td><div class="action-group"><button class="approve" onclick="approveDeposit('${d._id}')">Approve</button><button class="reject" onclick="rejectDeposit('${d._id}')">Reject</button></div></td>
+                </tr>`;
+            });
+            depositListDiv.innerHTML = html + '</table>';
+        } catch (err) { depositListDiv.innerHTML = '<h2><i class="fas fa-exclamation-circle"></i> Error loading deposits.</h2>'; }
+    }
+    
+    // You will need to create a similar fetchWithdrawals function
+
+    function fetchAllData() {
+        fetchUsers();
+        fetchDeposits();
+        // fetchWithdrawals();
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        showTab('users');
+        fetchAllData();
+    });
+</script>
 </html>
