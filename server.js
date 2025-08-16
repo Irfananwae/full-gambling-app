@@ -98,7 +98,6 @@ app.use((req, res, next) => {
 
 // --- Server Startup ---
 async function startServer() {
-    // ... (rest of the startServer function is the same as before, no changes needed here)
     if (!dbURI) { console.error('FATAL ERROR: DATABASE_URL is not set!'); return process.exit(1); }
     try {
         await mongoose.connect(dbURI, { useNewUrlParser: true, useUnifiedTopology: true });
@@ -106,7 +105,7 @@ async function startServer() {
         app.use('/api/auth', require('./routes/auth'));
         app.use('/api/game', require('./routes/game'));
         app.use('/api/transaction', require('./routes/transaction'));
-app.use('/api/admin', require('./routes/admin'));
+        app.use('/api/admin', require('./routes/admin'));
         io.on('connection', (socket) => { console.log('A user connected via WebSocket:', socket.id); });
         server.listen(PORT, () => { console.log(`🚀 Server is live on port ${PORT}`); });
     } catch (err) { console.error('❌ CRITICAL: Could not connect to MongoDB on startup.', err); process.exit(1); }
