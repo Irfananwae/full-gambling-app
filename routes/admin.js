@@ -62,6 +62,44 @@ router.post('/reject-withdrawal', adminAuth, async (req, res) => {
         await User.findByIdAndUpdate(withdrawal.userId, { $inc: { balance: withdrawal.amount } });
         res.json({ message: 'Withdrawal rejected and funds returned to user.' });
     } catch (err) { res.status(500).json({ message: 'Server error.' }); }
+// Add these inside routes/admin.js
+
+// GET: Fetch all pending deposit requests
+router.get('/deposits', adminAuth, async (req, res) => {
+    try {
+        const deposits = await Deposit.find({ status: 'pending' }).populate('userId', 'email');
+        res.json(deposits);
+    } catch (err) { res.status(500).json({ message: 'Server error fetching deposits' }); }
+});
+
+// POST: Approve a deposit and add funds
+router.post('/approve-deposit', adminAuth, async (req, res) => {
+    const { depositId } = req.body;
+    try {
+        const deposit = await Deposit.findById(depositId);
+        if (!deposit || deposit.status !== 'pending') {
+            return res.status(404).json({ message: 'Deposit not found or already processed.' });
+        }
+        
+        // Add funds to the user's account
+        await User.findByIdAndUpdate(deposit.userId, { $inc: { balance: deposit.amount } });
+        
+        // Mark deposit as approved
+        deposit.status = 'approved';
+        await deposit.save();
+
+        res.json({ message: `Deposit approved. ₹${deposit.amount} added to user.` });
+    } catch (err) { res.status(500).json({ message: 'Server error.' }); }
+});
+
+// POST: Reject a deposit
+router.post('/reject-deposit', adminAuth, async (req, res) => {
+    const { depositId } = req.body;
+    try {
+        const deposit = await Deposit.findByIdAndUpdate(depositId, { status: 'rejected' });
+        if (!deposit) return res.status(404).json({ message: 'Deposit not found.' });
+        res.json({ message: 'Deposit rejected.' });
+    } catch (err) { res.status(500).json({ message: 'Server error.' }); }
 });
 
 module.exports = router;
