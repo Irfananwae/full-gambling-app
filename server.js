@@ -4,7 +4,8 @@ const mongoose = require('mongoose');
 const cors = require('cors');
 const http = require('http');
 const { Server } = require("socket.io");
-const User = require('./models/User'); // We need the User model for payouts
+const jwt = require('jsonwebtoken');
+const User = require('./models/User');
 
 const app = express();
 const server = http.createServer(app);
@@ -12,102 +13,95 @@ const io = new Server(server, { cors: { origin: "*" } });
 
 const PORT = process.env.PORT || 3000;
 const dbURI = process.env.DATABASE_URL;
+const JWT_SECRET = process.env.JWT_SECRET || "default_fallback_secret";
 
-// --- Middleware ---
 app.use(cors());
 app.use(express.json());
 app.use(express.static('public'));
 
-// --- Game State (The Live Engine) ---
-let gameState = {
-    timer: 20,
-    phase: 'waiting', // Can be 'waiting', 'betting', or 'result'
-    roundId: null,
-    winningColor: null,
-    bots: []
-};
-const botNames = ["AlphaBot", "BetaZero", "GamerX", "ProPlayer", "LuckyBot", "DataDragon", "Quantum", "CodeSlinger"];
-let pendingBets = {}; // Store user bets for the current round: { userId: { betAmount, chosenColor }, ... }
+let gameState = { timer: 20, phase: 'waiting', winningColor: null, history: [] };
+let pendingBets = {};
+let connectedUsers = {}; // Maps userId to socket.id
 
-// --- The Game Loop ---
+// --- THE GAME LOOP ---
 setInterval(() => {
-    // 1. RESULT PHASE (Show winner for 5 seconds)
-    if (gameState.phase === 'betting') {
+    if (gameState.phase === 'betting') { // Round ends, calculate result
         gameState.phase = 'result';
         gameState.timer = 5;
         const colors = ['red', 'green', 'blue'];
         gameState.winningColor = colors[Math.floor(Math.random() * colors.length)];
-        
-        // Process payouts for the winning color
+        gameState.history.unshift(gameState.winningColor); // Add to history
+        if (gameState.history.length > 20) gameState.history.pop(); // Keep history short
         processPayouts(gameState.winningColor);
-
-    // 2. BETTING PHASE (Allow bets for 15 seconds)
-    } else {
+    } else { // New round starts
         gameState.phase = 'betting';
         gameState.timer = 15;
-        gameState.roundId = `R-${Date.now()}`;
-        pendingBets = {}; // Clear bets for the new round
+        pendingBets = {};
     }
+}, 15000); // Betting phase is 15 seconds
 
-}, 15000); // The main cycle is 15 seconds long (15 betting + 5 result = 20 total, but we'll manage timing)
-
-// --- Countdown & Bot Generator ---
+// --- The 1-Second Countdown Timer ---
 setInterval(() => {
     gameState.timer--;
-    
-    // Generate fake AI bot bets during the betting phase
-    if (gameState.phase === 'betting' && Math.random() > 0.5) {
-        gameState.bots.push({
-            name: botNames[Math.floor(Math.random() * botNames.length)],
-            bet: (Math.random() * 200 + 10).toFixed(2),
-            color: ['red', 'green', 'blue'][Math.floor(Math.random() * 3)]
-        });
-        if (gameState.bots.length > 8) gameState.bots.shift(); // Keep the list from getting too long
-    }
-
-    // Broadcast the updated state to all connected players
-    io.emit('gameState', gameState);
-
-}, 1000); // This runs every second
+    io.emit('gameState', gameState); // Broadcast state every second
+}, 1000);
 
 async function processPayouts(winningColor) {
     for (const userId in pendingBets) {
         const bet = pendingBets[userId];
         if (bet.chosenColor === winningColor) {
             try {
-                // Award winnings (e.g., 2x the bet amount)
-                const winnings = bet.betAmount * 2;
-                await User.findByIdAndUpdate(userId, { $inc: { balance: winnings } });
-            } catch (err) {
-                console.error(`Failed to process payout for user ${userId}:`, err);
-            }
+                const winnings = bet.betAmount * 2; // Payout is 2x
+                const updatedUser = await User.findByIdAndUpdate(userId, { $inc: { balance: winnings } }, { new: true });
+                
+                // If the winning user is online, send them a real-time balance update
+                if (connectedUsers[userId]) {
+                    io.to(connectedUsers[userId]).emit('balanceUpdate', { newBalance: updatedUser.balance });
+                }
+            } catch (err) { console.error(`Payout Error for user ${userId}:`, err); }
         }
     }
 }
 
-// Store user bets that come in via the API
-function registerBet(userId, betAmount, chosenColor) {
+// Share the betting function with the API routes
+app.set('registerBet', (userId, betAmount, chosenColor) => {
     pendingBets[userId] = { betAmount, chosenColor };
-}
+});
 
-// Pass the registerBet function to the route
-app.use((req, res, next) => {
-    req.registerBet = registerBet;
-    next();
+// --- REAL-TIME SOCKET CONNECTION HANDLING ---
+io.on('connection', (socket) => {
+    console.log('A user connected:', socket.id);
+    // Authenticate the user's connection
+    socket.on('authenticate', (token) => {
+        try {
+            const decoded = jwt.verify(token, JWT_SECRET);
+            connectedUsers[decoded.userId] = socket.id;
+            console.log(`User ${decoded.userId} authenticated with socket ${socket.id}`);
+        } catch (err) { console.log('Socket authentication failed'); }
+    });
+    socket.on('disconnect', () => {
+        // Remove user from the map on disconnect
+        for (const userId in connectedUsers) {
+            if (connectedUsers[userId] === socket.id) {
+                delete connectedUsers[userId];
+                break;
+            }
+        }
+        console.log('A user disconnected:', socket.id);
+    });
 });
 
 // --- Server Startup ---
 async function startServer() {
-    if (!dbURI) { console.error('FATAL ERROR: DATABASE_URL is not set!'); return process.exit(1); }
+    if (!dbURI) { console.error('FATAL ERROR!'); process.exit(1); }
     try {
         await mongoose.connect(dbURI, { useNewUrlParser: true, useUnifiedTopology: true });
-        console.log('✅ MongoDB Connected Successfully!');
+        console.log('✅ MongoDB Connected!');
         app.use('/api/auth', require('./routes/auth'));
         app.use('/api/game', require('./routes/game'));
         app.use('/api/transaction', require('./routes/transaction'));
         app.use('/api/admin', require('./routes/admin'));
-        io.on('connection', (socket) => { console.log('A user connected via WebSocket:', socket.id); });
         server.listen(PORT, () => { console.log(`🚀 Server is live on port ${PORT}`); });
-    } catch (err) { console.error('❌ CRITICAL: Could not connect to MongoDB on startup.', err); process.exit(1); }
+    } catch (err) { console.error('❌ CRITICAL STARTUP ERROR:', err); process.exit(1); }
 }
 startServer();
