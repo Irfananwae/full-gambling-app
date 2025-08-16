@@ -426,23 +426,64 @@ button.reject { background: #dc3545; box-shadow: none; }
 .galaxy-battle-card { text-align: center; }
 .jackpot-display { font-size: 2.5em; font-weight: 700; color: #ffc107; text-shadow: 0 0 15px #ffc107; }
 .players-list { font-size: 0.9em; color: #a0a0a0; min-height: 40px; }
-/* --- AVIATOR FINAL CUT CLONE --- */
-.aviator-body { background-color: #0f151c; overflow: hidden; }
-.aviator-page { width: 100%; height: 100vh; padding: 10px; display: flex; flex-direction: column; font-family: 'Poppins', sans-serif; }
+/* --- PHOENIX PROJECT - GLOBAL STYLES --- */
+body {
+    background-color: #0f151c;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    font-family: 'Poppins', sans-serif;
+}
+
+.phone-container {
+    width: 100%;
+    max-width: 420px;
+    height: 95vh;
+    max-height: 850px;
+    background-color: #1a222d;
+    border-radius: 30px;
+    border: 8px solid #000;
+    box-shadow: 0 0 40px rgba(0,0,0,0.6);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    position: relative;
+}
+
+.page-container {
+    flex-grow: 1;
+    overflow-y: auto;
+    animation: pageFadeIn 0.5s ease-out;
+}
+@keyframes pageFadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+/* --- THEMATIC BACKGROUNDS --- */
+.stars { position:absolute; top:0; left:0; width:100%; height:100%; z-index:0; background:#000 url(https://www.script-tutorials.com/demos/360/images/stars.png) repeat top center; animation:move-twinkle-back 200s linear infinite; }
+.aviator-body .phone-container, .galaxy-body .phone-container { background-color: transparent; }
+.aviator-body, .galaxy-body { background: #0f151c; }
+
+/* ... your existing Neon Grid and other styles are fine ... */
+
+/* --- PHOENIX AVIATOR CLONE UI --- */
+.aviator-page { position: relative; z-index: 1; width: 100%; height: 100%; padding: 10px; display: flex; flex-direction: column; }
 .aviator-header { flex-shrink: 0; display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; }
 .aviator-history-bar { flex-shrink: 0; display: flex; gap: 8px; margin-bottom: 5px; overflow-x: auto; scrollbar-width: none; }
-.history-item { padding: 2px 8px; border-radius: 15px; font-size: 0.8em; font-weight: 600; color: #fff; }
-.history-item.red { color: #ff5555; } .history-item.orange { color: #ffc107; } .history-item.green { color: #4caf50; }
+.aviator-history-bar::-webkit-scrollbar { display: none; }
+.history-item { padding: 2px 8px; border-radius: 15px; font-size: 0.8em; font-weight: 600; border: 1px solid; }
+.history-item.crashed { color: #ff5555; border-color: #ff5555; }
+.history-item.safe { color: #4caf50; border-color: #4caf50; }
 .aviator-main { flex-grow: 1; display: flex; gap: 5px; overflow: hidden; }
-.live-bets-container { width: 120px; flex-shrink: 0; background: #2b3544; border-radius: 10px; padding: 8px; display: flex; flex-direction: column; }
+.live-bets-container { width: 120px; flex-shrink: 0; background: rgba(43, 53, 68, 0.6); backdrop-filter: blur(5px); border-radius: 10px; padding: 8px; display: flex; flex-direction: column; }
 .live-bets-container h3 { font-size: 0.9em; text-align: center; color: #8a9eb5; margin: 0 0 5px 0; }
 .live-bets-list { flex-grow: 1; overflow-y: auto; scrollbar-width: thin; }
-.live-bet-item { display: flex; justify-content: space-between; font-size: 0.8em; padding: 2px 0; }
-.live-bet-item span:first-child { color: #ddd; } .live-bet-item span:last-child { color: #4caf50; font-weight: 600; }
+.live-bet-item { display: flex; justify-content: space-between; font-size: 0.8em; padding: 2px 0; border-bottom: 1px solid #4a5568; }
+.live-bet-item span:first-child { color: #ddd; }
+.live-bet-item span:last-child { color: #4caf50; font-weight: 600; }
 .aviator-graph-container { position: relative; flex-grow: 1; border-radius: 10px; overflow: hidden; }
 #aviator-canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
 #aviator-plane { position: absolute; width: 40px; height: 40px; z-index: 3; }
-#aviator-plane svg { fill: #ff5555; filter: drop-shadow(0 0 5px #ff5555); transition: transform 0.2s ease-out; }
+#aviator-plane svg { fill: #ff5555; filter: drop-shadow(0 0 5px #ff5555); }
 #aviator-multiplier { width: 100%; height: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center; font-size: 4.5em; font-weight: 700; color: #fff; text-shadow: 0 0 20px rgba(255, 255, 255, 0.7); z-index: 2; }
 #aviator-multiplier.crashed { color: #ff5555; animation: shake 0.5s; }
 .flew-away-text { font-size: 0.5em; color: #fff; display: block; letter-spacing: 2px; }
