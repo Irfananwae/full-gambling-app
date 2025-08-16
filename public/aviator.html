@@ -17,19 +17,25 @@
         <div class="history-bar" id="aviator-history"></div>
         <div class="aviator-graph-container">
             <canvas id="aviator-canvas"></canvas>
-            <div id="aviator-multiplier">1.00x</div>
             <div id="aviator-message"></div>
+            <div id="aviator-multiplier">1.00x</div>
         </div>
-        <div class="live-bets-feed" id="aviator-live-bets"></div>
+        <div class="live-bets-feed" id="aviator-live-bets"><h3>Live Bets</h3><div id="live-bets-list"></div></div>
         <div class="bet-panels">
             <!-- Bet Panel 1 -->
             <div class="bet-panel" id="panel1">
-                <div class="amount-controls"><input type="number" placeholder="Bet Amount"><div class="quick-bets">...</div></div>
+                <div class="amount-controls">
+                    <input type="number" placeholder="Bet Amount" min="10">
+                    <div class="quick-bets"><button>10</button><button>50</button><button>100</button><button>500</button></div>
+                </div>
                 <button class="bet-btn">BET</button>
             </div>
             <!-- Bet Panel 2 -->
             <div class="bet-panel" id="panel2">
-                <div class="amount-controls"><input type="number" placeholder="Bet Amount"><div class="quick-bets">...</div></div>
+                <div class="amount-controls">
+                    <input type="number" placeholder="Bet Amount" min="10">
+                    <div class="quick-bets"><button>10</button><button>50</button><button>100</button><button>500</button></div>
+                </div>
                 <button class="bet-btn">BET</button>
             </div>
         </div>
@@ -37,9 +43,160 @@
     <script src="/socket.io/socket.io.js"></script>
     <script src="/js/main.js"></script>
     <script>
-        // Full Aviator Game JS Logic would go here.
-        // It's very complex, involving canvas rendering for the graph,
-        // managing state for two bet panels, and handling socket events.
+        if (!token) window.location.href = '/login.html';
+
+        const socket = io();
+        socket.on('connect', () => socket.emit('authenticate', token));
+
+        const balanceEl = document.getElementById('balance');
+        const historyEl = document.getElementById('aviator-history');
+        const multiplierEl = document.getElementById('aviator-multiplier');
+        const messageEl = document.getElementById('aviator-message');
+        const liveBetsEl = document.getElementById('live-bets-list');
+        const panels = {
+            panel1: { id: 'panel1', el: document.getElementById('panel1'), input: document.querySelector('#panel1 input'), btn: document.querySelector('#panel1 .bet-btn'), state: 'idle', betAmount: 0 },
+            panel2: { id: 'panel2', el: document.getElementById('panel2'), input: document.querySelector('#panel2 input'), btn: document.querySelector('#panel2 .bet-btn'), state: 'idle', betAmount: 0 }
+        };
+
+        // --- Canvas & Animation ---
+        const canvas = document.getElementById('aviator-canvas');
+        const ctx = canvas.getContext('2d');
+        let planeX = 0, planeY = 0, currentMultiplier = 1.00;
+        
+        function resizeCanvas() {
+            canvas.width = canvas.parentElement.clientWidth;
+            canvas.height = canvas.parentElement.clientHeight;
+        }
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+
+        function animate(multiplier) {
+            planeX = (multiplier - 1) * (canvas.width / 10); // Scale plane movement
+            planeY = canvas.height - (Math.log(multiplier) * 40);
+            
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            // Draw grid
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
+            for (let i = 0; i < canvas.width; i += 20) { ctx.beginPath(); ctx.moveTo(i, 0); ctx.lineTo(i, canvas.height); ctx.stroke(); }
+            for (let i = 0; i < canvas.height; i += 20) { ctx.beginPath(); ctx.moveTo(0, i); ctx.lineTo(canvas.width, i); ctx.stroke(); }
+
+            // Draw path
+            ctx.strokeStyle = '#66fcf1';
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            ctx.moveTo(0, canvas.height);
+            let pathX = 0;
+            for(let m = 1; m <= multiplier; m += 0.01) {
+                pathX = (m - 1) * (canvas.width / 10);
+                let pathY = canvas.height - (Math.log(m) * 40);
+                ctx.lineTo(pathX, pathY);
+            }
+            ctx.stroke();
+
+            // Draw plane
+            ctx.fillStyle = '#66fcf1';
+            ctx.font = '24px Arial';
+            ctx.fillText('✈️', planeX - 12, planeY + 8);
+        }
+        animate(1);
+
+        // --- State Management ---
+        socket.on('aviatorState', (state) => {
+            if (state.phase === 'waiting') {
+                multiplierEl.style.display = 'none';
+                messageEl.style.display = 'block';
+                const waitTime = Math.ceil((state.startTime - Date.now()) / 1000);
+                messageEl.textContent = `NEXT ROUND IN ${waitTime > 0 ? waitTime : 0}s`;
+                Object.values(panels).forEach(p => updatePanel(p, 'idle'));
+                liveBetsEl.innerHTML = '';
+                updateHistory(state.history);
+                animate(1);
+            } else if (state.phase === 'playing') {
+                messageEl.style.display = 'none';
+                multiplierEl.style.display = 'block';
+                multiplierEl.className = 'playing';
+                multiplierEl.textContent = `${state.multiplier.toFixed(2)}x`;
+                currentMultiplier = state.multiplier;
+                Object.values(panels).forEach(p => { if (p.state === 'waiting_for_round') updatePanel(p, 'in_game'); });
+                animate(state.multiplier);
+            } else if (state.phase === 'crashed') {
+                multiplierEl.className = 'crashed';
+                messageEl.style.display = 'block';
+                messageEl.innerHTML = `CRASHED @ <span style="color:#dc3545;">${state.multiplier.toFixed(2)}x</span>`;
+                Object.values(panels).forEach(p => updatePanel(p, 'idle'));
+            }
+        });
+
+        socket.on('aviatorNewBet', (data) => {
+            const betDiv = document.createElement('div');
+            betDiv.className = 'live-bet-item';
+            betDiv.innerHTML = `<span>${data.email.split('@')[0]}</span><span>₹${data.betAmount}</span>`;
+            liveBetsEl.prepend(betDiv);
+            if (liveBetsEl.children.length > 10) liveBetsEl.lastChild.remove();
+        });
+
+        function updatePanel(panel, newState) {
+            panel.state = newState;
+            panel.input.disabled = newState !== 'idle';
+            switch(newState) {
+                case 'idle':
+                    panel.btn.textContent = 'BET';
+                    panel.btn.className = 'bet-btn';
+                    break;
+                case 'waiting_for_round':
+                    panel.btn.textContent = 'WAITING...';
+                    panel.btn.className = 'bet-btn waiting';
+                    break;
+                case 'in_game':
+                    panel.btn.textContent = `CASH OUT ₹${(panel.betAmount * currentMultiplier).toFixed(2)}`;
+                    panel.btn.className = 'bet-btn cashout';
+                    break;
+                case 'cashed_out':
+                    panel.btn.textContent = `CASHED OUT`;
+                    panel.btn.className = 'bet-btn cashed-out';
+                    break;
+            }
+        }
+        
+        // --- Event Listeners ---
+        Object.values(panels).forEach(panel => {
+            panel.btn.addEventListener('click', () => {
+                if (panel.state === 'idle') {
+                    const amount = Number(panel.input.value);
+                    if (!amount || amount < 10) { alert('Minimum bet is ₹10'); return; }
+                    fetch('/api/aviator/place-bet', {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/json', 'x-auth-token': token },
+                        body: JSON.stringify({ betAmount: amount, betPanelId: panel.id })
+                    }).then(res => res.json()).then(data => {
+                        if (data.newBalance !== undefined) {
+                            balanceEl.textContent = `₹${data.newBalance.toFixed(2)}`;
+                            panel.betAmount = amount;
+                            updatePanel(panel, 'waiting_for_round');
+                        } else { alert(data.message); }
+                    });
+                } else if (panel.state === 'in_game') {
+                    fetch('/api/aviator/cash-out', {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/json', 'x-auth-token': token },
+                        body: JSON.stringify({ betPanelId: panel.id })
+                    }).then(res => res.json()).then(data => {
+                        if (data.newBalance !== undefined) {
+                            balanceEl.textContent = `₹${data.newBalance.toFixed(2)}`;
+                            updatePanel(panel, 'cashed_out');
+                        } else { alert(data.message); }
+                    });
+                }
+            });
+            // Quick bet buttons
+            panel.el.querySelectorAll('.quick-bets button').forEach(button => {
+                button.addEventListener('click', () => panel.input.value = button.textContent);
+            });
+        });
+        
+        function updateHistory(history) { /* ... function to render history dots ... */ }
+        socket.on('balanceUpdate', (data) => balanceEl.textContent = `₹${data.newBalance.toFixed(2)}`);
+        document.addEventListener('DOMContentLoaded', () => fetch('/api/game/balance', { headers: { 'x-auth-token': token }}).then(r=>r.json()).then(d=>balanceEl.textContent=`₹${d.balance.toFixed(2)}`));
     </script>
 </body>
 </html>
